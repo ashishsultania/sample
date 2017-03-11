@@ -17,7 +17,7 @@ app.set('port', port);
 var multer  =   require('multer');
 var storage =   multer.diskStorage({
   destination: function (req, file, callback) {
-    callback(null, './upload');
+    callback(null, './uploadclient');
   },
   filename: function (req, file, callback) {
     callback(null, file.originalname);
@@ -30,8 +30,19 @@ var upload = multer({ storage : storage}).single('logFile');
 //var upload = multer({storage: storage}).single('photo');
 
 //Showing index.html file on our homepage
-app.get('/', function(resuest, response) {
-  response.sendFile('/example/index.html');
+app.get('/', function(request, response) {
+  //const params = request.params;
+  var id  = request.query.cmd;
+  var spawn = require('child_process').spawn,
+  py    = spawn('python', ['parser.py']), dataString = id;
+//Handle normal output
+
+  py.stdin.write(JSON.stringify(id));
+  py.stdin.end();
+  
+  
+  console.log('Get request received');
+  response.end('Cmd received is::   ' + id)
 });
 
 //Posting the file upload
@@ -41,9 +52,18 @@ app.post('/upload', function(request, response) {
     console.log(err);
     return;
   }
-  console.log(request.file);
+  
+  var spawn = require('child_process').spawn,
+  py    = spawn('python', ['parser.py']), dataString = request.file.originalname;
+//Handle normal output
+
+  py.stdin.write(JSON.stringify("2:"+request.file.originalname));
+  py.stdin.end();
+
+  
+  console.log(request.file.originalname);
   response.end('Your File Uploaded');
-  console.log('Photo Uploaded');
+  console.log('File Uploaded');
   })
 });
 

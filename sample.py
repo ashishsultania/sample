@@ -1,6 +1,22 @@
 import os
 import shutil
 from datetime import datetime
+from subprocess import Popen, PIPE
+import sys,json
+
+def read_in():
+    lines = sys.stdin.readlines()
+    #Since our input would only be having one line, parse our JSON data from that
+    return json.loads(lines[0])
+
+os.chdir('/home/sultana1')
+while 1:
+    lines = read_in()
+    with open("date.txt","a") as f:
+        f.write(lines)
+        
+        f.write("\n")
+    f.close()
 
 timformat='%Y-%m-%d %H:%M:%S.%f'
 tim=datetime.now().strftime(timformat)
@@ -38,4 +54,6 @@ if numlines>5:
         f.write(''.join(lines[1:]))
         f.close()
 
+p1 = Popen(["dmesg"], stdout=PIPE)
+print p1.communicate()
 
