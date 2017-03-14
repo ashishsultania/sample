@@ -1,11 +1,14 @@
 
 sudo apt-get install nodejs-legacy
 sudo apt-get install node-express
+sudo apt install npm
+sudo npm i multer
 
 sudo node server.js
 
 
-
+to kill port:
+fuser 8081/tcp
 
 
 To execute run:
