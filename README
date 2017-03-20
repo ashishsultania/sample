@@ -1,26 +1,44 @@
 
+Installation required:
+----------------------
 sudo apt-get install nodejs-legacy
 sudo apt-get install node-express
 sudo apt install npm
 sudo npm i multer
 
-sudo node server.js
+create directory 'uploadclient'
 
 
-to kill port:
+Run Server:
+------------
+sudo node server_serverside.js
+
+
+To kill port:
+---------------
 fuser 8081/tcp
 
 
-To execute run:
- python main
+To execute Client:
+------------------
+python main
+
 
 To send post request run:
+-------------------------
  ./send.py
  
  
- To send get request:
+Get request:
+------------- 
+To run and command:
+https://192.168.242.1:8081/?cmd=1:ls
  
- https://192.168.242.1:8081/?cmd=1:ls
+To ask for specific file:
+https://192.168.242.1:8081/?cmd=3:/path/
  
  
- to see output check "result" folder
+ 
+ 
+To see output of script run at client: Check "result" folder
+
