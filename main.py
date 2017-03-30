@@ -62,16 +62,17 @@ def main():
     for i in range(len(cmd)-1): 
         p = Popen([cmd[i]], stdin=PIPE, shell=True)
 
-    #Create periodic logs
-    timformat='%Y-%m-%d-%H-%M-%S-%f'
-    tim=datetime.now().strftime(timformat)
-    filename = "regular_log_" + tim +".tar"
-    time.sleep(5)
-    plogdir =  dirnm + '/periodic_log'
-    if not os.path.isdir(plogdir):
-        os.mkdir(plogdir)
-    os.chdir(plogdir)
     while 1:
+
+        #Create periodic logs
+        timformat='%Y-%m-%d-%H-%M-%S-%f'
+        tim=datetime.now().strftime(timformat)
+        filename = "regular_log_" + tim +".tar"
+        time.sleep(5)
+        plogdir =  dirnm + '/periodic_log'
+        if not os.path.isdir(plogdir):
+            os.mkdir(plogdir)
+        os.chdir(plogdir)
         fname = ['/var/log/kern.log',
                  '/var/log/syslog',
                  '/var/log/syslog.1',

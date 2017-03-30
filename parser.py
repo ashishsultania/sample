@@ -34,8 +34,8 @@ def send_out(cmd):
     invokepostclient(filename)
     #thread.start_new_thread( invokepostclient, ("Thread-1",filename) )
 
-
-basedir = '/home/'+os.environ['USER'] + '/sample'
+homedir  = os.path.expanduser("~")
+basedir =  homedir + '/sample'
 
 lines = read_in()
 
