@@ -5,7 +5,7 @@ global basedir
 
 
 def invokepostclient (filename):
-    url = 'https://192.168.242.137:8082/upload'
+    url = 'https://192.168.242.138:8082/upload'
     files = {'logFile': open(filename, 'rb')}
     r = requests.post(url, files=files,verify=False)
 
