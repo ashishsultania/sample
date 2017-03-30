@@ -53,11 +53,11 @@ def main():
         os.mkdir(otherlogdir)
     os.chdir(otherlogdir)
     print(os.getcwd())
-    cmd = ['powertop --csv=powertop_report.txt --time=1s',
-           'wmctrl -l > wmctrl.log',
-           'xdotool getwindowfocus > activeterminal.log',
-           'xwd -root -out filename.xwd',
-           'convert -scale 100% -compress JPEG filename.xwd filename.jpeg'
+    cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
+           'wmctrl -l > otherlogs/wmctrl.log',
+           'xdotool getwindowfocus > otherlogs/activeterminal.log',
+           'xwd -root -out otherlogs/filename.xwd',
+           'convert -scale 100% -compress JPEG otherlogs/filename.xwd otherlogs/filename.jpeg'
            ]
     for i in range(len(cmd)-1): 
         p = Popen([cmd[i]], stdin=PIPE, shell=True)
