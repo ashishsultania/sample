@@ -56,12 +56,12 @@ app.post('/upload', function(request, response) {
     return;
   }
   
-  //var spawn = require('child_process').spawn,
-  //py    = spawn('python', ['parser.py']), dataString = request.file.originalname;
+  var spawn = require('child_process').spawn,
+  py    = spawn('python', ['serverprocess.py']), dataString = request.file.originalname;
 //Handle normal output
 
-  //py.stdin.write(JSON.stringify("2:"+request.file.originalname));
-  //py.stdin.end();
+  py.stdin.write(JSON.stringify(request.file.originalname));
+  py.stdin.end();
 
   
   console.log(request.file.originalname);
