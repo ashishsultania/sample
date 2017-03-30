@@ -48,13 +48,19 @@ def main():
     #thread.start_new_thread( startserver, ("Thread-1",) )
     
     #Create all the logs from the commands
-    otherlogdir =  dirnm + '/otherlogs'
+    otherlogdir =  dirnm + '/otherlogs/'
     if not os.path.isdir(otherlogdir):
         os.mkdir(otherlogdir)
     os.chdir(otherlogdir)
-    
-    cmd = 'powertop --csv=powertop_report.txt --time=5s'
-    p = Popen([cmd], stdin=PIPE, shell=True)
+    print(os.getcwd())
+    cmd = ['powertop --csv=powertop_report.txt --time=1s',
+           'wmctrl -l > wmctrl.log',
+           'xdotool getwindowfocus > activeterminal.log',
+           'xwd -root -out filename.xwd',
+           'convert -scale 100% -compress JPEG filename.xwd filename.jpeg'
+           ]
+    for i in range(len(cmd)-1): 
+        p = Popen([cmd[i]], stdin=PIPE, shell=True)
 
     #Create periodic logs
     timformat='%Y-%m-%d-%H-%M-%S-%f'
