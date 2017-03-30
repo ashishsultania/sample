@@ -3,17 +3,15 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 import getpass
 
-global pswd
 global basedir
 
 def invokepostclient (filename):
-    url = 'https://192.168.242.137:8082/upload'
+    url = 'https://192.168.242.138:8082/upload'
     files = {'logFile': open(filename, 'rb')}
     r = requests.post(url, files=files,verify=False)
 
 
 def startserver():
-    global pswd
     global basedir
     
     dirnm =  basedir + '/sample'
@@ -28,7 +26,6 @@ def startserver():
     p = Popen([cmd], stdin=PIPE, shell=True)
     time.sleep(2)
 
-    p.communicate(input=pswd)
     #print("Server stared done")
 
 
@@ -36,11 +33,9 @@ def startserver():
 
 def main():
     #Start server at client side in a thread
-    global pswd
     global basedir
     
-    basedir = '/home/'+os.environ['USER']
-    pswd = getpass.getpass('Password:')
+    basedir  = os.path.expanduser("~")
     dirnm =  basedir + '/sample'
     if not os.path.isdir(dirnm):
         os.mkdir(dirnm)
@@ -58,9 +53,8 @@ def main():
         os.mkdir(otherlogdir)
     os.chdir(otherlogdir)
     
-    cmd = 'sudo powertop --csv=powertop_report.txt --time=5s'
+    cmd = 'powertop --csv=powertop_report.txt --time=5s'
     p = Popen([cmd], stdin=PIPE, shell=True)
-    p.communicate(input=pswd)
 
     #Create periodic logs
     timformat='%Y-%m-%d-%H-%M-%S-%f'
@@ -88,17 +82,15 @@ def main():
                  '/var/log/btmp',
                  '/var/run/utmp',
                  '/var/log/wtmp.1',
-                 '/home/'+os.environ['USER'] +'/.mozilla/firefox/Crash\ Reports/',
-                 '/home/sultana1/sample/otherlogs/']
-        cmd = "sudo tar cvPf "+ filename  + " " + fname[0]
+                 basedir +'/.mozilla/firefox/Crash\ Reports/',
+                 basedir +'/sample/otherlogs/']
+        cmd = "tar cvPf "+ filename  + " " + fname[0]
 
         p = Popen([cmd], stdin=PIPE, shell=True)
-        b = p.communicate(input=pswd)
             
         for i in range(len(fname)-1):
-            cmd = "sudo tar uPf " + filename + " " + (fname[i+1])
+            cmd = "tar uPf " + filename + " " + (fname[i+1])
             p = Popen([cmd], stdin=PIPE, shell=True)
-            p.communicate(input=pswd)
                 
         invokepostclient(filename)
         time.sleep(10)
