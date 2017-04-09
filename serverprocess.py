@@ -12,8 +12,8 @@ def read_in():
     return json.loads(lines[0])
 
 
-#filename = read_in()
-filename = "regular_log_2017-03-30-11-15-16-882747.tar"
+filename = read_in()
+#filename = "regular_log_2017-03-30-11-58-09-399100.tar"
 homedir  = os.path.expanduser("~")
 basedir =  homedir + '/sample'
 uploaddir = basedir + '/uploadserver'
@@ -22,7 +22,7 @@ a, b = filename.split('.')
 
 cmd = "mkdir " + a
 p = Popen([cmd], stdin=PIPE, shell=True)
-
+p.wait()
 cmd = "tar xf " +  filename + " -C " + a
 os.system(cmd)
 
@@ -81,17 +81,12 @@ if active_win_id_dec != mozilla_win_id:
     target.write(active_win_id_dec)  
 
 
-    ssl._create_default_https_context = ssl._create_unverified_context
-    web = httplib.HTTPSConnection('192.168.242.136:8081')
-    print web
-#headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-    web.request("GET", "/?cmd=1:"+cmd)
-    r1 = web.getresponse()
+    #ssl._create_default_https_context = ssl._create_unverified_context
+    url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+    r = requests.get(url,verify=False)
+    print r.text
+             
 
-    print r1.status, r1.reason, r1.read()
-
-
-    target.write(r1.read())  
     target.close()
 
              
