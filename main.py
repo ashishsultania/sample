@@ -56,6 +56,7 @@ def main():
     cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
            'wmctrl -l > otherlogs/wmctrl.log',
            'xdotool getwindowfocus > otherlogs/activeterminal.log',
+           'xwininfo -root -all > otherlogs/xwininfo.log'
            'xwd -root -out otherlogs/filename.xwd',
            'convert -scale 100% -compress JPEG otherlogs/filename.xwd otherlogs/filename.jpeg'
            ]

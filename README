@@ -9,6 +9,11 @@ sudo npm i multer
 create directory 'uploadclient'
 
 
+Client side:
+-------------
+sudo apt-get install python-requests
+sudo apt-get install powertop
+
 Run Server:
 ------------
 sudo node server_serverside.js

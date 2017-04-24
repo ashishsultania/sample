@@ -1,9 +1,5 @@
 import os
-from datetime import datetime
-import time
-import glob
 from subprocess import Popen, PIPE
-import sys
 import hashlib
 import tarfile
 import shutil
@@ -83,8 +79,8 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
             duplicate = hashes_full.get(full_hash)
             if duplicate:
                 print "Duplicate found: %s and %s" % (filename, duplicate)
-                os.symlink(filename,duplicate+"1")
-                os.system("mv "+duplicate+"1 "+duplicate)
+                os.symlink(duplicate, filename+"1")
+                os.system("mv "+filename+"1 "+filename)
                 
             else:
                 hashes_full[full_hash] = filename
@@ -100,7 +96,12 @@ def untar(filename):
     if not os.path.isdir(a):
         cmd = "mkdir " + a
         p = Popen([cmd], stdin=PIPE, shell=True)
-        p.wait()
+        (output, err) = p.communicate()
+ 
+        ## Wait for date to terminate. Get return returncode ##
+        p_status = p.wait()
+        print "Command output : ", output
+        print "Command exit status/return code : ", p_status
 
         cmd = "tar xf " +  filename + " -C " + a
         p = Popen([cmd], stdin=PIPE, shell=True)
@@ -156,23 +157,24 @@ for path, subdirs, files in os.walk(dirnm+'/'+a1):
     for name in files:
         #print os.path.join(path, name)
         filesindir1.append(os.path.join(path, name))
-print filesindir1
-print "....................................."
+#print filesindir1
+#print "....................................."
 filesindir2 = []
 for path, subdirs, files in os.walk(dirnm+'/'+a2):
     for name in files:
         #print os.path.join(path, name)
         filesindir2.append(os.path.join(path, name))
-print filesindir2
+#print filesindir2
 print "....................................."
+
 
 
 check_for_duplicates([dirnm+'/'+a1, dirnm+'/'+a2])
 
-tar("tmp.tar", a1,dirnm)
+tar("tmp.tar", a2,dirnm)
 shutil.rmtree(dirnm+'/'+a1)
 shutil.rmtree(dirnm+'/'+a2)
-os.remove(new1) 
+os.remove(new1)
 os.rename("tmp.tar",new1)
 
 list1 = []
