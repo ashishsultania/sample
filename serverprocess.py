@@ -88,6 +88,27 @@ if active_win_id_dec != mozilla_win_id:
              
 
     target.close()
+    
+    
+# check the size of browser
+if active_win_id_dec != mozilla_win_id:    
+    with open("xwininfo.log") as f:
+        for line in f:
+            #print line
+            if "geometry" in line:             
+                desktop_geom = ((line.split(' ')[3].rstrip()).split('+')[0].split('x'))
+            if "Mozilla" in line:
+                mozilla_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
+            if "Chrome" in line:
+                chrome_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
+    f.close()
+    
+    if int(desktop_geom[0])*int(desktop_geom[1]) > int(mozilla_browser_geom[0])*int(mozilla_browser_geom[1]):
+        print('yes')
+        cmd = "xdotool key F11"
+        url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+        r = requests.get(url,verify=False)
+        
 
              
 
