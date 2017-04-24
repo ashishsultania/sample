@@ -6,7 +6,7 @@ import getpass
 global basedir
 
 def invokepostclient (filename):
-    url = 'https://192.168.242.138:8082/upload'
+    url = 'https://192.168.242.139:8082/upload'
     files = {'logFile': open(filename, 'rb')}
     r = requests.post(url, files=files,verify=False)
 
@@ -34,7 +34,8 @@ def startserver():
 def main():
     #Start server at client side in a thread
     global basedir
-    
+    time.sleep(15)
+ 
     basedir  = os.path.expanduser("~")
     dirnm =  basedir + '/sample'
     if not os.path.isdir(dirnm):
@@ -51,19 +52,19 @@ def main():
     otherlogdir =  dirnm + '/otherlogs/'
     if not os.path.isdir(otherlogdir):
         os.mkdir(otherlogdir)
-    os.chdir(otherlogdir)
-    print(os.getcwd())
-    cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
+    while 1:
+        os.chdir(otherlogdir)
+        print(os.getcwd())
+        cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
            'wmctrl -l > otherlogs/wmctrl.log',
            'xdotool getwindowfocus > otherlogs/activeterminal.log',
-           'xwininfo -root -all > otherlogs/xwininfo.log'
            'xwd -root -out otherlogs/filename.xwd',
+           'xwininfo -root -all > otherlogs/xwininfo.log',
            'convert -scale 100% -compress JPEG otherlogs/filename.xwd otherlogs/filename.jpeg'
            ]
-    for i in range(len(cmd)-1): 
-        p = Popen([cmd[i]], stdin=PIPE, shell=True)
+        for i in range(len(cmd)-1): 
+            p = Popen([cmd[i]], stdin=PIPE, shell=True)
 
-    while 1:
 
         #Create periodic logs
         timformat='%Y-%m-%d-%H-%M-%S-%f'
@@ -78,14 +79,6 @@ def main():
                  '/var/log/syslog',
                  '/var/log/syslog.1',
                  '/etc/rsyslog.conf',
-                 '/proc/asound/cards',
-                 '/proc/buddyinfo',
-                 '/proc/loadavg',
-                 '/proc/meminfo',
-                 '/proc/partitions',
-                 '/proc/stat',
-                 '/proc/uptime',
-                 '/proc/sys/kernel/',
                  '/var/log/wtmp',
                  '/var/log/btmp',
                  '/var/run/utmp',
@@ -95,11 +88,11 @@ def main():
         cmd = "tar cvPf "+ filename  + " " + fname[0]
 
         p = Popen([cmd], stdin=PIPE, shell=True)
-            
+        p.wait()      
         for i in range(len(fname)-1):
             cmd = "tar uPf " + filename + " " + (fname[i+1])
             p = Popen([cmd], stdin=PIPE, shell=True)
-                
+            p.wait()    
         invokepostclient(filename)
         time.sleep(10)
                 
