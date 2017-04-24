@@ -13,7 +13,7 @@ def read_in():
 
 
 filename = read_in()
-#filename = "regular_log_2017-03-30-11-58-09-399100.tar"
+#filename = "regular_log_2017-04-24-09-00-28-485043.tar"
 homedir  = os.path.expanduser("~")
 basedir =  homedir + '/sample'
 uploaddir = basedir + '/uploadserver'
@@ -34,12 +34,12 @@ subdirectories = os.listdir(path)
 if 'home' in subdirectories:
     path =  path + 'home'
     subdirectories = os.listdir(path)
-    #print("1",subdirectories)
+    print("1",subdirectories)
     while len(subdirectories) == 1:
         path = path + '/' +  subdirectories[0]
         subdirectories = os.listdir(path)
-        #print("2",subdirectories)
-#print subdirectories
+        print("2",subdirectories)
+print subdirectories
 
 path = path + '/' + subdirectories[ subdirectories.index("sample")] + '/otherlogs'
 print path
@@ -91,7 +91,7 @@ if active_win_id_dec != mozilla_win_id:
     
     
 # check the size of browser
-if active_win_id_dec != mozilla_win_id:    
+if active_win_id_dec == mozilla_win_id:    
     with open("xwininfo.log") as f:
         for line in f:
             #print line
@@ -105,6 +105,7 @@ if active_win_id_dec != mozilla_win_id:
     
     if int(desktop_geom[0])*int(desktop_geom[1]) > int(mozilla_browser_geom[0])*int(mozilla_browser_geom[1]):
         print('yes')
+        #cmd = "wmctrl -r mozilla -b add,fullscreen"
         cmd = "xdotool key F11"
         url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
         r = requests.get(url,verify=False)
