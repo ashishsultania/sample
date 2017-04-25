@@ -24,6 +24,8 @@ def startserver():
     os.chdir(dirnm)
     cmd = "node server_clientside.js"
     p = Popen([cmd], stdin=PIPE, shell=True)
+    #cmd = "sudo node server_clientside.js"
+    #os.system(cmd)
     time.sleep(2)
 
     #print("Server stared done")
@@ -56,10 +58,10 @@ def main():
         os.chdir(otherlogdir)
         print(os.getcwd())
         cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
-           'wmctrl -l > otherlogs/wmctrl.log',
-           'xdotool getwindowfocus > otherlogs/activeterminal.log',
-           'xwd -root -out otherlogs/filename.xwd',
-           'xwininfo -root -all > otherlogs/xwininfo.log',
+           'wmctrl -l > wmctrl.log',
+           'xdotool getwindowfocus > activeterminal.log',
+           'xwd -root -out filename.xwd',
+           'xwininfo -root -all > xwininfo.log',
            'convert -scale 100% -compress JPEG otherlogs/filename.xwd otherlogs/filename.jpeg'
            ]
         for i in range(len(cmd)-1): 

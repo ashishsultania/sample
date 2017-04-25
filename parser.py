@@ -5,7 +5,7 @@ global basedir
 
 
 def invokepostclient (filename):
-    url = 'https://192.168.242.138:8082/upload'
+    url = 'https://192.168.242.139:8082/upload'
     files = {'logFile': open(filename, 'rb')}
     r = requests.post(url, files=files,verify=False)
 
@@ -39,16 +39,25 @@ basedir =  homedir + '/sample'
 
 lines = read_in()
 
-a, b = lines.split(':')
+a, b = lines.split(':',1)
 
 if a == '1':
     cmd = b   # command to be run
+    #failure = subprocess.Popen([cmd], stdin=PIPE, shell=True)
+    #failure = subprocess.check_output(cmd, shell=True,stderr=subprocess.STDOUT)
+    	
     failure = os.system(cmd)
-
+    #failure.wait()
+    with open("filename.txt","a") as f:
+        f.write(cmd)
+        f.write('\n')
+        f.write("%s\n" % failure)
+        f.write('ashish')
     if failure:
-        print( "Execution of failed!")
+        f.write( "Execution of failed!")
         os.chdir(basedir)
-    send_out(cmd)
+    #send_out(cmd)
+    f.close()
     
 elif a == '3':
     cmd = b   # command to be run
