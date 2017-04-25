@@ -55,17 +55,24 @@ def main():
     if not os.path.isdir(otherlogdir):
         os.mkdir(otherlogdir)
     while 1:
-        os.chdir(otherlogdir)
+        os.chdir(dirnm)
         print(os.getcwd())
         cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
-           'wmctrl -l > wmctrl.log',
-           'xdotool getwindowfocus > activeterminal.log',
-           'xwd -root -out filename.xwd',
-           'xwininfo -root -all > xwininfo.log',
+           'wmctrl -l > otherlogs/wmctrl.log',
+           'xdotool getwindowfocus > otherlogs/activeterminal.log',
+           'xwd -root -out otherlogs/filename.xwd',
+           'xwininfo -root -all > otherlogs/xwininfo.log',
+           'xrandr > otherlogs/xrandr.log',
+           'ddccontrol -p > otherlogs/ddccontrol.log',
+           'lshw > otherlogs/lshw.log',
            'convert -scale 100% -compress JPEG otherlogs/filename.xwd otherlogs/filename.jpeg'
            ]
         for i in range(len(cmd)-1): 
+            #os.system(cmd[i])
+            #if 'ddccontrol' in cmd[i]:
+            #    time.sleep(5)
             p = Popen([cmd[i]], stdin=PIPE, shell=True)
+            p.wait()
 
 
         #Create periodic logs
