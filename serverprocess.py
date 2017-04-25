@@ -35,7 +35,7 @@ def sendmail(TO,body,subject):
 
 displayaddr = '0xd6'
 filename = read_in()
-#filename = "regular_log_2017-04-24-09-00-28-485043.tar"
+#filename = "regular_log_2017-04-24-11-58-42-397202.tar"
 homedir  = os.path.expanduser("~")
 basedir =  homedir + '/sample'
 uploaddir = basedir + '/uploadserver'
@@ -51,20 +51,17 @@ os.system(cmd)
 target = open("output.txt", 'w')
 target.write("COMMAND DONE")  
 
-path = uploaddir+ '/' + a + '/'
-subdirectories = os.listdir(path)
-if 'home' in subdirectories:
-    path =  path + 'home'
-    subdirectories = os.listdir(path)
-    print("1",subdirectories)
-    while len(subdirectories) == 1:
-        path = path + '/' +  subdirectories[0]
-        subdirectories = os.listdir(path)
-        print("2",subdirectories)
-print subdirectories
+mpath = uploaddir+ '/' + a + '/'
+target.write(mpath)
+for path, subdirs, files in os.walk(mpath):
+    for name in subdirs:
+        c = path.count('sample')
+        if c == 2:
+            tpath = path
+            break     
 
-path = path + '/' + subdirectories[ subdirectories.index("sample")] + '/otherlogs'
-print path
+path = tpath + '/otherlogs'
+target.write(path)
 os.chdir(path)
 
 print (os.getcwd())
@@ -113,7 +110,8 @@ if active_win_id_dec != mozilla_win_id:
     
     
 # check the size of browser
-if active_win_id_dec == mozilla_win_id:    
+if active_win_id_dec == mozilla_win_id: 
+    print "Active window is mozilla"   
     with open("xwininfo.log") as f:
         for line in f:
             #print line
@@ -132,50 +130,60 @@ if active_win_id_dec == mozilla_win_id:
 
 
     if x != 0 or y!=0:
-        #print("Toolbar enabled")
+        print("Toolbar enabled")
         cmd = "gsettings set org.compiz.unityshell:/org/compiz/profiles/unity/plugins/unityshell/ launcher-hide-mode 1"
         #cmd = "ls -lrt"
         url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
         r = requests.get(url,verify=False)
 
  
-    if int(desktop_geom[0])*int(desktop_geom[1]) < int(mozilla_browser_geom[0])*int(mozilla_browser_geom[1]):
-        cmd = "wmctrl -r mozilla -b add,fullscreen"
-        #cmd = "xdotool key F11"
+    if int(desktop_geom[0])*int(desktop_geom[1]) > int(mozilla_browser_geom[0])*int(mozilla_browser_geom[1]):
+        #cmd = "wmctrl -r mozilla -b add,fullscreen"
+        cmd = "xdotool key F11"
         url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
         r = requests.get(url,verify=False)
         
 
-     
+colorflag = 0   
+vgaconnect = 0
+templist = []
 with open("xrandr.log") as f:
     for line in f:
-        #print line
-        if " connected" not in line: 
-            sendmail('ashishsultania2k7@gmail.com', "Please check connection cable manually.\n \n Admin","Display Device Cable disconnected")
-        else:
-            found_abstract = False
-            with open("ddccontrol.log") as f2:
-                for line2 in f2:
-                    if 'Power' in line2:
-                        found_abstract = True
-                    if found_abstract:
-                        if 'address' in line2:
-                            templist = line2.split(',')
-            f2.close()
-            
-            for data in templist:
-                if 'address' in data:
-                    displayaddr = (data.split('=')[1])    
-            
-
-            #Case of Monitor is powered off
-            if "Color settings" not in line:  
-                cmd = "ddccontrol -p -r "+displayaddr+" -w 1"                
-                url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
-                r = requests.get(url,verify=False)
-                #sendmail('ashishsultania2k7@gmail.com', "Please check your Display.\n \n Admin","Display Device Powered off")
-    
+        print line
+        if " connected" in line:
+            vgaconnect = 1
 f.close()
+
+if vgaconnect == 0:
+    print "Sending Mail"
+    sendmail('ashishsultania2k7@gmail.com', "Please check connection cable manually.\n \n Admin","Display Device Cable disconnected")
+else:
+    found_abstract = False
+    with open("ddccontrol.log") as f2:
+        for line2 in f2:
+            if "Color settings" not in line:
+                colorflag = 1
+            if 'Power' in line2:
+                found_abstract = True
+            if found_abstract:
+                if 'address' in line2:
+                    templist = line2.split(',')
+    f2.close()
+    
+    for data in templist:
+        if 'address' in data:
+            displayaddr = (data.split('=')[1])    
+    
+
+    #Case of Monitor is powered off
+    if colorflag == 1:  
+        cmd = "ddccontrol -p -r "+displayaddr+" -w 1" 
+        print cmd               
+        url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+        r = requests.get(url,verify=False)
+        #sendmail('ashishsultania2k7@gmail.com', "Please check your Display.\n \n Admin","Display Device Powered off")
+
+
 
 
 
