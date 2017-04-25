@@ -4,14 +4,36 @@ from subprocess import Popen, PIPE
 import httplib,ssl
 
 global basedir
-
+global displayaddr
 
 def read_in():
     lines = sys.stdin.readlines()
     #Since our input would only be having one line, parse our JSON data from that
     return json.loads(lines[0])
 
+def sendmail(TO,body,subject):
+    # Import smtplib for the actual sending function
+    import smtplib
 
+    # Import the email modules we'll need
+    from email.mime.text import MIMEText
+    FROM = 'ankitkumdel@gmail.com'
+    password='helloaalto'
+    From2 = 'SERVER'
+    # Prepare actual message
+    msg = """From: %s\nTo: %s\nSubject: %s\n\n%s
+    """ % (From2,"".join(TO), subject, body)
+    # Send the message via our own SMTP server, but don't include the
+    # envelope header.
+    s = smtplib.SMTP('smtp.gmail.com:587')
+    s.ehlo()
+    s.starttls()
+    s.login(FROM,password)
+    s.sendmail(FROM, [TO], msg)
+    s.quit()
+
+
+displayaddr = '0xd6'
 filename = read_in()
 #filename = "regular_log_2017-04-24-09-00-28-485043.tar"
 homedir  = os.path.expanduser("~")
@@ -56,10 +78,10 @@ with open("wmctrl.log") as f:
     for line in f:
         #print line
         if "Mozilla" in line:
-             print "Mozilla is running"
-             a = line.split(' ')
-             mozilla_win_id = a[0]
-             print mozilla_win_id
+            print "Mozilla is running"
+            a = line.split(' ')
+            mozilla_win_id = a[0]
+            print mozilla_win_id
 f.close()
 
 hex_int = int(mozilla_win_id, 16)
@@ -125,6 +147,35 @@ if active_win_id_dec == mozilla_win_id:
         
 
      
+with open("xrandr.log") as f:
+    for line in f:
+        #print line
+        if " connected" not in line: 
+            sendmail('ashishsultania2k7@gmail.com', "Please check connection cable manually.\n \n Admin","Display Device Cable disconnected")
+        else:
+            found_abstract = False
+            with open("ddccontrol.log") as f2:
+                for line2 in f2:
+                    if 'Power' in line2:
+                        found_abstract = True
+                    if found_abstract:
+                        if 'address' in line2:
+                            templist = line2.split(',')
+            f2.close()
+            
+            for data in templist:
+                if 'address' in data:
+                    displayaddr = (data.split('=')[1])    
+            
+
+            #Case of Monitor is powered off
+            if "Color settings" not in line:  
+                cmd = "ddccontrol -p -r "+displayaddr+" -w 1"                
+                url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+                r = requests.get(url,verify=False)
+                #sendmail('ashishsultania2k7@gmail.com', "Please check your Display.\n \n Admin","Display Device Powered off")
+    
+f.close()
 
 
 
