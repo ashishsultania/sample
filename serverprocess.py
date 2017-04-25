@@ -99,19 +99,32 @@ if active_win_id_dec == mozilla_win_id:
                 desktop_geom = ((line.split(' ')[3].rstrip()).split('+')[0].split('x'))
             if "Mozilla" in line:
                 mozilla_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
+                x = int(line.split(' ')[-1].split('+')[1].rstrip())
+                y = int(line.split(' ')[-1].split('+')[2].rstrip())
+            
             if "Chrome" in line:
                 chrome_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
     f.close()
-    
-    if int(desktop_geom[0])*int(desktop_geom[1]) > int(mozilla_browser_geom[0])*int(mozilla_browser_geom[1]):
-        print('yes')
-        #cmd = "wmctrl -r mozilla -b add,fullscreen"
-        cmd = "xdotool key F11"
+   
+
+
+
+    if x != 0 or y!=0:
+        #print("Toolbar enabled")
+        cmd = "gsettings set org.compiz.unityshell:/org/compiz/profiles/unity/plugins/unityshell/ launcher-hide-mode 1"
+        #cmd = "ls -lrt"
+        url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+        r = requests.get(url,verify=False)
+
+ 
+    if int(desktop_geom[0])*int(desktop_geom[1]) < int(mozilla_browser_geom[0])*int(mozilla_browser_geom[1]):
+        cmd = "wmctrl -r mozilla -b add,fullscreen"
+        #cmd = "xdotool key F11"
         url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
         r = requests.get(url,verify=False)
         
 
-             
+     
 
 
 
