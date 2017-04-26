@@ -3,6 +3,7 @@ from subprocess import Popen, PIPE
 import hashlib
 import tarfile
 import shutil
+import ntpath
 
 
 
@@ -31,7 +32,7 @@ def get_hash(filename, first_chunk_only=False, hash=hashlib.sha1):
     return hashed
 
 
-def check_for_duplicates(paths, hash=hashlib.sha1):
+def check_for_duplicates(paths, commondir):
     hashes_by_size = {}
     hashes_on_1k = {}
     hashes_full = {}
@@ -78,9 +79,21 @@ def check_for_duplicates(paths, hash=hashlib.sha1):
 
             duplicate = hashes_full.get(full_hash)
             if duplicate:
-                print "Duplicate found: %s and %s" % (filename, duplicate)
-                os.symlink(duplicate, filename+"1")
-                os.system("mv "+filename+"1 "+filename)
+                #print "Duplicate found: %s and %s" % (filename, duplicate)
+                try:
+                    shutil.copy2(filename, commondir)
+                except shutil.Error:
+                    pass
+                bn = ntpath.basename(filename)
+                
+                rcd =  os.path.realpath(commondir) + "/" + bn               
+                os.symlink(rcd, filename+"tmp")
+                os.symlink(rcd, duplicate+"tmp")
+                try:
+                    shutil.move(filename+"tmp",filename)
+                    shutil.move(duplicate+"tmp",duplicate)
+                except shutil.Error:
+                    pass
                 
             else:
                 hashes_full[full_hash] = filename
@@ -125,6 +138,7 @@ def tar(filename,source_dir,dirnm):
 basedir  = os.path.expanduser("~")
 dirnm =  basedir + '/sample/periodic_log'
 dirnm =  basedir + '/sample/uploadclient'
+commondir = 'common/'
 if not os.path.isdir(dirnm):
     os.mkdir(dirnm)
 os.chdir(dirnm)
@@ -169,13 +183,16 @@ print "....................................."
 
 
 
-check_for_duplicates([dirnm+'/'+a1, dirnm+'/'+a2])
+check_for_duplicates([dirnm+'/'+a1, dirnm+'/'+a2],commondir)
+tar("tmp1.tar", a1,dirnm)
+tar("tmp2.tar", a2,dirnm)
 
-tar("tmp.tar", a2,dirnm)
 shutil.rmtree(dirnm+'/'+a1)
 shutil.rmtree(dirnm+'/'+a2)
 os.remove(new1)
-os.rename("tmp.tar",new1)
+os.remove(oldest)
+os.rename("tmp1.tar",oldest)
+os.rename("tmp2.tar",new1)
 
 list1 = []
 for f in filesindir1:
