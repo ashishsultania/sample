@@ -1,7 +1,7 @@
 import os, requests, threading,time,sys
 from datetime import datetime
 from subprocess import Popen, PIPE
-import getpass
+import memuse
 
 global basedir
 
@@ -34,6 +34,7 @@ def startserver():
 
 
 def main():
+        
     #Start server at client side in a thread
     global basedir
     time.sleep(15)
@@ -74,7 +75,8 @@ def main():
             p = Popen([cmd[i]], stdin=PIPE, shell=True)
             p.wait()
 
-
+        memuse.getmemuse(dirnm + '/otherlogs/memuse')
+        
         #Create periodic logs
         timformat='%Y-%m-%d-%H-%M-%S-%f'
         tim=datetime.now().strftime(timformat)
