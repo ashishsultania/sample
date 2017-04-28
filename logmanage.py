@@ -31,12 +31,25 @@ def get_hash(filename, first_chunk_only=False, hash=hashlib.sha1):
     file_object.close()
     return hashed
 
+def linksubsets(file_new,file_old):
+    file_new = ''.join(file_new)
+    file_old = ''.join(file_old)
+    with open(file_new, 'r') as file1:
+        with open(file_old, 'r') as file2:
+            if( (set(file2).issubset(file1))) :
+                os.symlink(file_new, file_old+"tmp")
+                try:
+                    shutil.move(file_old+"tmp",file_old)
+                except shutil.Error:
+                    pass
+                
+        
 
 def check_for_duplicates(paths, commondir):
     hashes_by_size = {}
     hashes_on_1k = {}
     hashes_full = {}
-
+    singlefiles = {}
     for path in paths:
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
@@ -49,16 +62,29 @@ def check_for_duplicates(paths, commondir):
 
                 duplicate = hashes_by_size.get(file_size)
 
+                # Append to a dictionary of same size list 
                 if duplicate:
                     hashes_by_size[file_size].append(full_path)
+                # Create and dictionary and append same size list
                 else:
                     hashes_by_size[file_size] = []  # create the list for this file size
                     hashes_by_size[file_size].append(full_path)
+                  
     # For all files with the same file size, get their hash on the 1st 1024 bytes
     for __, files in hashes_by_size.items():
+        #New file or not same
         if len(files) < 2:
+            bn = ntpath.basename(files[0])
+            if singlefiles.get(bn):
+                singlefiles[bn].append(files)
+            else:
+                singlefiles[bn] = (files)
+            
             continue    # this file size is unique, no need to spend cpy cycles on it
-
+      
+        
+        
+        
         for filename in files:
             small_hash = get_hash(filename, first_chunk_only=True)
 
@@ -71,8 +97,10 @@ def check_for_duplicates(paths, commondir):
 
     # For all files with the hash on the 1st 1024 bytes, get their hash on the full file - collisions will be duplicates
     for __, files in hashes_on_1k.items():
+        #New file or not same
         if len(files) < 2:
             continue    # this hash of fist 1k file bytes is unique, no need to spend cpy cycles on it
+        
 
         for filename in files:
             full_hash = get_hash(filename, first_chunk_only=False)
@@ -97,8 +125,10 @@ def check_for_duplicates(paths, commondir):
                 
             else:
                 hashes_full[full_hash] = filename
-
-
+    for key,val in singlefiles.items():
+        if len(val) == 2:            
+            linksubsets(val[1],val[0])
+    
 
 def untar(filename):
     #os.chdir(dirnm)
@@ -127,7 +157,7 @@ def make_tarfile(output_filename, source_dir):
 
 def tar(filename,source_dir,dirnm):
     os.chdir(source_dir)
-    print os.getcwd()
+    #print os.getcwd()
     cmd = "tar -cvf - * > ../" +filename
     p = Popen([cmd], stdin=PIPE, shell=True)
     p.wait()
