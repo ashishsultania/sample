@@ -32,7 +32,7 @@ def sendmail(TO,body,subject):
     s.sendmail(FROM, [TO], msg)
     s.quit()
 
-
+CURRENT_URL = "https://www.youtube.com/watch?v=3ZbZppJI-sA"
 displayaddr = '0xd6'
 filename = read_in()
 #filename = "regular_log_2017-04-24-11-58-42-397202.tar"
@@ -88,6 +88,11 @@ with open("activeterminal.log") as f:
     active_win_id_dec = f.readlines()
 f.close()
 
+with open("currenturl.log") as f:
+    current_url = f.readlines()
+f.close()
+
+
 result = [int(x.strip(' "')) for x in active_win_id_dec]
 active_win_id_dec =  hex(result[0])
 
@@ -121,7 +126,22 @@ if active_win_id_dec == mozilla_win_id:
                 mozilla_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
                 x = int(line.split(' ')[-1].split('+')[1].rstrip())
                 y = int(line.split(' ')[-1].split('+')[2].rstrip())
-            
+                if len(current_url) > 1:
+                    if CURRENT_URL != current_url[int(current_url[0].rstrip())].rstrip():
+                        cmd = "xkill -id "+active_win_id_dec
+                        url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+                        r = requests.get(url,verify=False)
+                        
+                        cmd = "firefox " + CURRENT_URL
+                        url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+                        r = requests.get(url,verify=False)
+                        
+                        cmd = "xdotool key F11"
+                        url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+                        r = requests.get(url,verify=False)
+                        
+                        
+                    
             if "Chrome" in line:
                 chrome_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
     f.close()

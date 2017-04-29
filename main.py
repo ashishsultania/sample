@@ -2,6 +2,8 @@ import os, requests, threading,time,sys
 from datetime import datetime
 from subprocess import Popen, PIPE
 import memuse
+import json
+from matplotlib.cbook import Null
 
 global basedir
 
@@ -30,14 +32,49 @@ def startserver():
 
     #print("Server stared done")
 
+def current_url():
+    basedir  = os.path.expanduser("~")
+    mozdir = basedir + '/.mozilla/firefox/'
+    target = open("otherlogs/currenturl.log", 'w')
 
+      
+    
+    tabs = []
+    active_urlindex = 0
+    for root, dirs, files in os.walk(mozdir):
+        for name in dirs:
+            if name.endswith('.default'):
+                filepath = os.path.join(mozdir, name)
+                filepath = filepath + '/sessionstore-backups'
+                for root, dirs, files in os.walk(filepath):
+                    for name in files:
+                        if name == 'recovery.js':
+                                            
+                            f = open(filepath + "/"+name, "r")
+                            jdata = json.loads(f.read())
+                            f.close()
+                            active_urlindex= str(jdata["windows"][0]["selected"])
+                            target.write(active_urlindex + "\n")
+
+                            tabs.append(active_urlindex)
+                            
+                            for win in jdata.get("windows"):
+                                for tab in win.get("tabs"):
+                                    i = tab.get("index") - 1
+                                    tabs.append(tab.get("entries")[i].get("url"))
+                                    target.write(str(tab.get("entries")[i].get("url"))+ "\n")
+                target.close()
+
+                return(tabs)
+    target.close()        
+    return("Mozilla is closed: recovery.js not exist")
 
 
 def main():
         
     #Start server at client side in a thread
     global basedir
-    time.sleep(15)
+    time.sleep(10)
  
     basedir  = os.path.expanduser("~")
     dirnm =  basedir + '/sample'
@@ -58,6 +95,8 @@ def main():
     while 1:
         os.chdir(dirnm)
         print(os.getcwd())
+        
+        current_url()
         cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
            'wmctrl -l > otherlogs/wmctrl.log',
            'xdotool getwindowfocus > otherlogs/activeterminal.log',
@@ -88,18 +127,22 @@ def main():
         os.chdir(plogdir)
         fname = ['/var/log/kern.log',
                  '/var/log/syslog',
-                 '/var/log/syslog.1',
+                 '/var/log/Xorg.0.log',
+                 '/var/log/auth.log',
                  '/etc/rsyslog.conf',
                  '/var/log/wtmp',
                  '/var/log/btmp',
                  '/var/run/utmp',
-                 '/var/log/wtmp.1',
+                 '/var/log/gpu-manager.log',
+                 '/var/log/journal/',
                  basedir +'/.mozilla/firefox/Crash\ Reports/',
                  basedir +'/sample/otherlogs/']
         cmd = "tar cvPf "+ filename  + " " + fname[0]
 
         p = Popen([cmd], stdin=PIPE, shell=True)
         p.wait()      
+
+        
         for i in range(len(fname)-1):
             cmd = "tar uPf " + filename + " " + (fname[i+1])
             p = Popen([cmd], stdin=PIPE, shell=True)
