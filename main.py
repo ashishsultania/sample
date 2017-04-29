@@ -4,6 +4,7 @@ from subprocess import Popen, PIPE
 import memuse
 import json
 import ClientConfig
+import reboot_script
 
 def invokepostclient (filename):
     files = {'logFile': open(filename, 'rb')}
@@ -26,6 +27,17 @@ def startserver():
     time.sleep(2)
 
     #print("Server stared done")
+
+
+def checknetwork():
+    while 1:
+        f = open(ClientConfig.ethpath, "r")
+        if "0\n" ==    f.read():
+            reboot_script.main()
+        time.sleep(networkcheck_st)
+    
+
+
 
 def getcurrent_url():
     mozdir = ClientConfig.basedir + '/.mozilla/firefox/'
@@ -73,6 +85,10 @@ def main():
     
     t           = threading.Thread(target=startserver)
     t.daemon    = True
+    t1          = threading.Thread(target=checknetwork)
+    t1.daemon   = True
+
+    t1.start()
     t.start()
     #print ("Server loop running in thread:", t.name)
     #thread.start_new_thread( startserver, ("Thread-1",) )
