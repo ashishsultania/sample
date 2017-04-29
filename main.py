@@ -3,27 +3,23 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 import memuse
 import json
-from matplotlib.cbook import Null
-
-global basedir
+import ClientConfig
 
 def invokepostclient (filename):
-    url = 'https://192.168.242.139:8082/upload'
     files = {'logFile': open(filename, 'rb')}
-    r = requests.post(url, files=files,verify=False)
+    r = requests.post(ClientConfig.serverurl, files=files,verify=False)
 
 
 def startserver():
     global basedir
     
-    dirnm =  basedir + '/sample'
-    serverfname = dirnm + '/server_clientside.js'
+    serverfname = ClientConfig.dirnm + '/server_clientside.js'
     if not os.path.isfile(serverfname):
         print("File no Exist: Exiting Server Thread......")
         sys.exit()
     print(serverfname)   
 
-    os.chdir(dirnm)
+    os.chdir(ClientConfig.dirnm)
     cmd = "node server_clientside.js"
     p = Popen([cmd], stdin=PIPE, shell=True)
     #cmd = "sudo node server_clientside.js"
@@ -32,12 +28,9 @@ def startserver():
 
     #print("Server stared done")
 
-def current_url():
-    basedir  = os.path.expanduser("~")
+def getcurrent_url():
     mozdir = basedir + '/.mozilla/firefox/'
     target = open("otherlogs/currenturl.log", 'w')
-
-      
     
     tabs = []
     active_urlindex = 0
@@ -73,30 +66,30 @@ def current_url():
 def main():
         
     #Start server at client side in a thread
-    global basedir
     time.sleep(10)
  
-    basedir  = os.path.expanduser("~")
-    dirnm =  basedir + '/sample'
-    if not os.path.isdir(dirnm):
-        os.mkdir(dirnm)
-    os.chdir(dirnm)
+    if not os.path.isdir(ClientConfig.dirnm):
+        os.mkdir(ClientConfig.dirnm)
+    os.chdir(ClientConfig.dirnm)
     
-    t = threading.Thread(target=startserver)
-    t.daemon = True
+    t           = threading.Thread(target=startserver)
+    t.daemon    = True
     t.start()
     #print ("Server loop running in thread:", t.name)
     #thread.start_new_thread( startserver, ("Thread-1",) )
     
     #Create all the logs from the commands
-    otherlogdir =  dirnm + '/otherlogs/'
+    otherlogdir =  ClientConfig.dirnm + '/otherlogs/'
     if not os.path.isdir(otherlogdir):
         os.mkdir(otherlogdir)
+    
+    
+    
     while 1:
-        os.chdir(dirnm)
-        print(os.getcwd())
+        os.chdir(ClientConfig.dirnm)
+        #print(os.getcwd())
         
-        current_url()
+        getcurrent_url()
         cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
            'wmctrl -l > otherlogs/wmctrl.log',
            'xdotool getwindowfocus > otherlogs/activeterminal.log',
@@ -107,21 +100,19 @@ def main():
            'lshw > otherlogs/lshw.log',
            'convert -scale 100% -compress JPEG otherlogs/filename.xwd otherlogs/filename.jpeg'
            ]
+        
         for i in range(len(cmd)-1): 
-            #os.system(cmd[i])
-            #if 'ddccontrol' in cmd[i]:
-            #    time.sleep(5)
             p = Popen([cmd[i]], stdin=PIPE, shell=True)
             p.wait()
 
-        memuse.getmemuse(dirnm + '/otherlogs/memuse')
+        memuse.getmemuse(ClientConfig.dirnm + '/otherlogs/memuse')
         
         #Create periodic logs
         timformat='%Y-%m-%d-%H-%M-%S-%f'
         tim=datetime.now().strftime(timformat)
         filename = "regular_log_" + tim +".tar"
         time.sleep(5)
-        plogdir =  dirnm + '/periodic_log'
+        plogdir =  ClientConfig.dirnm + '/periodic_log'
         if not os.path.isdir(plogdir):
             os.mkdir(plogdir)
         os.chdir(plogdir)
@@ -147,6 +138,7 @@ def main():
             cmd = "tar uPf " + filename + " " + (fname[i+1])
             p = Popen([cmd], stdin=PIPE, shell=True)
             p.wait()    
+        
         invokepostclient(filename)
         time.sleep(10)
                 
