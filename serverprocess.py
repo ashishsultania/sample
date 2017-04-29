@@ -135,13 +135,16 @@ if active_win_id_dec == mozilla_win_id:
                         cmd = "firefox " + CURRENT_URL
                         url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
                         r = requests.get(url,verify=False)
-                        
-                        cmd = "xdotool key F11"
+                        time.sleep(4)
+                        cmd = "wmctrl -r mozilla -b add,fullscreen"
                         url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
                         r = requests.get(url,verify=False)
-                        
-                        
-                    
+                        if "youtube.com" in CURRENT_URL:
+                            time.sleep(4)
+                            cmd = "xdotool key F"
+                            url = 'https://192.168.242.136:8081/?cmd=1:' + cmd
+                            r = requests.get(url,verify=False)
+                            
             if "Chrome" in line:
                 chrome_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
     f.close()
