@@ -11,7 +11,6 @@ def invokepostclient (filename):
 
 
 def startserver():
-    global basedir
     
     serverfname = ClientConfig.dirnm + '/server_clientside.js'
     if not os.path.isfile(serverfname):
@@ -29,7 +28,7 @@ def startserver():
     #print("Server stared done")
 
 def getcurrent_url():
-    mozdir = basedir + '/.mozilla/firefox/'
+    mozdir = ClientConfig.basedir + '/.mozilla/firefox/'
     target = open("otherlogs/currenturl.log", 'w')
     
     tabs = []
@@ -66,7 +65,7 @@ def getcurrent_url():
 def main():
         
     #Start server at client side in a thread
-    time.sleep(10)
+    time.sleep(5)
  
     if not os.path.isdir(ClientConfig.dirnm):
         os.mkdir(ClientConfig.dirnm)
@@ -126,8 +125,8 @@ def main():
                  '/var/run/utmp',
                  '/var/log/gpu-manager.log',
                  '/var/log/journal/',
-                 basedir +'/.mozilla/firefox/Crash\ Reports/',
-                 basedir +'/sample/otherlogs/']
+                 ClientConfig.basedir +'/.mozilla/firefox/Crash\ Reports/',
+                 ClientConfig.basedir +'/sample/otherlogs/']
         cmd = "tar cvPf "+ filename  + " " + fname[0]
 
         p = Popen([cmd], stdin=PIPE, shell=True)
