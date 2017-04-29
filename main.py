@@ -34,7 +34,7 @@ def checknetwork():
         f = open(ClientConfig.ethpath, "r")
         if "0\n" ==    f.read():
             reboot_script.main()
-        time.sleep(networkcheck_st)
+        time.sleep(ClientConfig.networkcheck_st)
     
 
 
