@@ -4,7 +4,7 @@ import hashlib
 import tarfile
 import shutil
 import ntpath
-
+import ServerConfig
 
 
 
@@ -134,8 +134,7 @@ def untar(filename):
     #os.chdir(dirnm)
     #print os.getcwd()
     #print filename
-    a, b = filename.split('.')
-    print os.path.isdir(a)
+    a, b = filename.split('.tar')
     if not os.path.isdir(a):
         cmd = "mkdir " + a
         p = Popen([cmd], stdin=PIPE, shell=True)
@@ -143,10 +142,10 @@ def untar(filename):
  
         ## Wait for date to terminate. Get return returncode ##
         p_status = p.wait()
-        print "Command output : ", output
-        print "Command exit status/return code : ", p_status
+        #print "Command output : ", output
+        #print "Command exit status/return code : ", p_status
 
-        cmd = "tar xf " +  filename + " -C " + a
+        cmd = "tar -xzf " +  filename + " -C " + a
         p = Popen([cmd], stdin=PIPE, shell=True)
         p.wait()
 
@@ -158,84 +157,88 @@ def make_tarfile(output_filename, source_dir):
 def tar(filename,source_dir,dirnm):
     os.chdir(source_dir)
     #print os.getcwd()
-    cmd = "tar -cvf - * > ../" +filename
+    cmd = "tar -czf - * > ../" +filename
     p = Popen([cmd], stdin=PIPE, shell=True)
     p.wait()
     os.chdir(dirnm)
 
 
+def main():
+    dirnm =  ServerConfig.basedir + '/periodic_log'
+    #dirnm =  ServerConfig.basedir + '/uploadserver'
+        
+    if not os.path.isdir(dirnm):
+        os.mkdir(dirnm)
+    os.chdir(dirnm)
 
-basedir  = os.path.expanduser("~")
-dirnm =  basedir + '/sample/periodic_log'
-dirnm =  basedir + '/sample/uploadclient'
-commondir = 'common/'
-if not os.path.isdir(dirnm):
-    os.mkdir(dirnm)
-os.chdir(dirnm)
+    commondir = 'common/'
+    if not os.path.isdir(commondir):
+        os.mkdir(commondir)
+        
+    dated_files = [(os.path.getmtime(fn), os.path.basename(fn)) 
+                   for fn in os.listdir(dirnm) if fn.lower().endswith('.tar.gz')]
+    dated_files.sort()
+    #files = sorted(os.listdir(os.getcwd()), key=os.path.getmtime)
 
-dated_files = [(os.path.getmtime(fn), os.path.basename(fn)) 
-               for fn in os.listdir(dirnm) if fn.lower().endswith('.tar')]
-dated_files.sort()
-#files = sorted(os.listdir(os.getcwd()), key=os.path.getmtime)
+    if len(dated_files) == 1:
+        exit(0)
 
-if len(dated_files) == 1:
-    exit(0)
+    oldest = dated_files[0][1]
+    new1   = dated_files[-1][1]
+    new2   = dated_files[-2][1]
 
-oldest = dated_files[0][1]
-new1 = dated_files[-1][1]
-new2 = dated_files[-2][1]
+    print "Oldest:", oldest
+    print "Newest1:", new1
+    print "Newest2:", new2
 
-print "Oldest:", oldest
-print "Newest1:", new1
-print "Newest2:", new2
+    untar(oldest)
+    untar(new1)
 
-untar(oldest)
-untar(new1)
-
-a1, b1 = oldest.split('.')
-a2, b2 = new1.split('.')
-
-
-filesindir1 = []
-for path, subdirs, files in os.walk(dirnm+'/'+a1):
-    for name in files:
-        #print os.path.join(path, name)
-        filesindir1.append(os.path.join(path, name))
-#print filesindir1
-#print "....................................."
-filesindir2 = []
-for path, subdirs, files in os.walk(dirnm+'/'+a2):
-    for name in files:
-        #print os.path.join(path, name)
-        filesindir2.append(os.path.join(path, name))
-#print filesindir2
-print "....................................."
+    a1, b1 = oldest.split('.tar')
+    a2, b2 = new1.split('.tar')
 
 
-
-check_for_duplicates([dirnm+'/'+a1, dirnm+'/'+a2],commondir)
-tar("tmp1.tar", a1,dirnm)
-tar("tmp2.tar", a2,dirnm)
-
-shutil.rmtree(dirnm+'/'+a1)
-shutil.rmtree(dirnm+'/'+a2)
-os.remove(new1)
-os.remove(oldest)
-os.rename("tmp1.tar",oldest)
-os.rename("tmp2.tar",new1)
-
-list1 = []
-for f in filesindir1:
-    w1, l1 = f.split(a1)
-    list1.append(l1)
-    
-
-list2 = []
-for f in filesindir2:
-    w2, l2 = f.split(a2)
-    list2.append(l2)
-
-namematchindex = [(i, j) for i in range(len(list1)) for j in range(len(list2)) if list1[i] == list2[j]]
+    filesindir1 = []
+    for path, subdirs, files in os.walk(dirnm+'/'+a1):
+        for name in files:
+            #print os.path.join(path, name)
+            filesindir1.append(os.path.join(path, name))
+    #print filesindir1
+    #print "....................................."
+    filesindir2 = []
+    for path, subdirs, files in os.walk(dirnm+'/'+a2):
+        for name in files:
+            #print os.path.join(path, name)
+            filesindir2.append(os.path.join(path, name))
+    #print filesindir2
+    print "....................................."
 
 
+
+    check_for_duplicates([dirnm+'/'+a1, dirnm+'/'+a2],commondir)
+    tar("tmp1.tar.gz", a1,dirnm)
+    tar("tmp2.tar.gz", a2,dirnm)
+
+    shutil.rmtree(dirnm+'/'+a1)
+    shutil.rmtree(dirnm+'/'+a2)
+    os.remove(new1)
+    os.remove(oldest)
+    os.rename("tmp1.tar.gz",oldest)
+    os.rename("tmp2.tar.gz",new1)
+
+    list1 = []
+    for f in filesindir1:
+        w1, l1 = f.split(a1)
+        list1.append(l1)
+        
+
+    list2 = []
+    for f in filesindir2:
+        w2, l2 = f.split(a2)
+        list2.append(l2)
+
+    namematchindex = [(i, j) for i in range(len(list1)) for j in range(len(list2)) if list1[i] == list2[j]]
+
+if(__name__ == "__main__"):
+    main()
 
