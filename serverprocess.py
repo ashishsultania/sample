@@ -88,17 +88,19 @@ def checkhdmicable():
 def main():
 
     filename = read_in()
-    #filename = "regular_log_2017-04-24-11-58-42-397202.tar"
+    #filename = "regular_log_2017-05-02-14-18-23-754872.tar.gz"
     
     uploaddir = ServerConfig.basedir + '/uploadserver'
     os.chdir(uploaddir)
-    a, b = filename.split('.')
+    a, b = filename.split('.tar')
     
     cmd = "mkdir " + a
     p = Popen([cmd], stdin=PIPE, shell=True)
     p.wait()
-    cmd = "tar xf " +  filename + " -C " + a
-    os.system(cmd)
+
+    cmd = "tar -xzf " +  filename + " -C " + a
+    p = Popen([cmd], stdin=PIPE, shell=True)
+    p.wait()
     
     target = open("output.txt", 'w')
     target.write("COMMAND DONE")  

@@ -10,7 +10,12 @@ def invokepostclient (filename):
     files = {'logFile': open(filename, 'rb')}
     r = requests.post(ClientConfig.serverurl, files=files,verify=False)
 
+def runcommad(cmd):
+    print(cmd)
 
+    p = Popen([cmd], stdin=PIPE, shell=True)
+    p.wait()
+    
 def startserver():
     
     serverfname = ClientConfig.dirnm + '/server_clientside.js'
@@ -36,8 +41,6 @@ def checknetwork():
             reboot_script.main()
         time.sleep(ClientConfig.networkcheck_st)
     
-
-
 
 def getcurrent_url():
     mozdir = ClientConfig.basedir + '/.mozilla/firefox/'
@@ -116,10 +119,9 @@ def main():
            'convert -scale 100% -compress JPEG otherlogs/filename.xwd otherlogs/filename.jpeg'
            ]
         
-        for i in range(len(cmd)-1): 
-            p = Popen([cmd[i]], stdin=PIPE, shell=True)
-            p.wait()
-
+        for i in range(len(cmd)-1):
+            runcommad(cmd[i])
+            
         memuse.getmemuse(ClientConfig.dirnm + '/otherlogs/memuse')
         
         #Create periodic logs
@@ -142,19 +144,22 @@ def main():
                  '/var/log/gpu-manager.log',
                  '/var/log/journal/',
                  ClientConfig.basedir +'/.mozilla/firefox/Crash\ Reports/',
-                 ClientConfig.basedir +'/sample/otherlogs/']
-        cmd = "tar cvPf "+ filename  + " " + fname[0]
+                 ClientConfig.basedir +'/sample/otherlogs/'
+                 ]
+        cmd = "tar cPf "+ filename  + " " + fname[0]
 
-        p = Popen([cmd], stdin=PIPE, shell=True)
-        p.wait()      
+        runcommad(cmd)     
 
         
         for i in range(len(fname)-1):
             cmd = "tar uPf " + filename + " " + (fname[i+1])
-            p = Popen([cmd], stdin=PIPE, shell=True)
-            p.wait()    
+            runcommad(cmd)
         
-        invokepostclient(filename)
+        cmd = "gzip "+filename
+        runcommad(cmd)   
+        
+        
+        invokepostclient(filename+".gz")
         time.sleep(10)
                 
 if(__name__ == "__main__"):
