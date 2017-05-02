@@ -2,6 +2,9 @@ import os, requests,sys, json, time
 from subprocess import Popen, PIPE
 import httplib,ssl
 import ServerConfig
+import shutil
+import logmanage
+
 
 def read_in():
     lines = sys.stdin.readlines()
@@ -83,12 +86,18 @@ def checkhdmicable():
             cmd = "ddccontrol -p -r "+ServerConfig.displayaddr+" -w 1" 
             invokepostserver_cmd1(cmd)
 
+def managedb(uploaddir,logfolder):
+    os.chdir(uploaddir)
+    shutil.rmtree(logfolder)
+    
+    print "Calling main() of logmanage"
+    logmanage.main()
 
 
 def main():
 
     filename = read_in()
-    #filename = "regular_log_2017-05-02-14-18-23-754872.tar.gz"
+    #filename = "regular_log_2017-05-02-07-21-41-846312.tar.gz"
     
     uploaddir = ServerConfig.basedir + '/uploadserver'
     os.chdir(uploaddir)
@@ -103,7 +112,7 @@ def main():
     p.wait()
     
     target = open("output.txt", 'w')
-    target.write("COMMAND DONE")  
+    target.write("COMMAND DONE\n")  
     
     mpath = uploaddir+ '/' + a + '/'
     target.write(mpath)
@@ -123,8 +132,6 @@ def main():
     
     target.write(os.getcwd())  
     
-    
-    
     with open("wmctrl.log") as f:
         for line in f:
             #print line
@@ -137,10 +144,11 @@ def main():
                 #Default app is not running
                 runfirefox()
                 checkhdmicable()
+                managedb(uploaddir,a)
                 return
                 
     f.close()
-    
+
     hex_int = int(mozilla_win_id, 16)
     mozilla_win_id = hex(hex_int)
     
@@ -163,7 +171,8 @@ def main():
         target.write(active_win_id_dec)  
         invokepostserver_cmd1(cmd)
     
-        target.close()
+
+    target.close()
         
         
     # check the size of browser
@@ -203,8 +212,10 @@ def main():
             invokepostserver_cmd1(cmd)
     
     checkhdmicable()
+
+    managedb(uploaddir,a)
     
-    
+
     
 
 

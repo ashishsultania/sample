@@ -50,6 +50,11 @@ def check_for_duplicates(paths, commondir):
     hashes_on_1k = {}
     hashes_full = {}
     singlefiles = {}
+    
+    if not os.path.isdir(commondir):
+        os.mkdir(commondir)
+        
+    
     for path in paths:
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
@@ -109,19 +114,25 @@ def check_for_duplicates(paths, commondir):
             if duplicate:
                 #print "Duplicate found: %s and %s" % (filename, duplicate)
                 try:
-                    shutil.copy2(filename, commondir)
+                    if os.path.islink(duplicate) == True and os.path.getsize(duplicate) != 0:
+                        linkto = os.readlink(duplicate)
+                        os.symlink(linkto, filename+"tmp")
+                        shutil.move(filename+"tmp",filename)
+                    else:
+                        shutil.copy2(filename, commondir)
                 except shutil.Error:
                     pass
-                bn = ntpath.basename(filename)
-                
-                rcd =  os.path.realpath(commondir) + "/" + bn               
-                os.symlink(rcd, filename+"tmp")
-                os.symlink(rcd, duplicate+"tmp")
-                try:
-                    shutil.move(filename+"tmp",filename)
-                    shutil.move(duplicate+"tmp",duplicate)
-                except shutil.Error:
-                    pass
+                if os.path.islink(duplicate) == False:
+                    bn = ntpath.basename(filename)
+                    
+                    rcd =  os.path.realpath(commondir) + "/" + bn
+                    os.symlink(rcd, filename+"tmp")
+                    os.symlink(rcd, duplicate+"tmp")
+                    try:
+                        shutil.move(filename+"tmp",filename)
+                        shutil.move(duplicate+"tmp",duplicate)
+                    except shutil.Error:
+                        pass
                 
             else:
                 hashes_full[full_hash] = filename
@@ -164,8 +175,8 @@ def tar(filename,source_dir,dirnm):
 
 
 def main():
-    dirnm =  ServerConfig.basedir + '/periodic_log'
-    #dirnm =  ServerConfig.basedir + '/uploadserver'
+    #dirnm =  ServerConfig.basedir + '/periodic_log'
+    dirnm =  ServerConfig.basedir + '/uploadserver'
         
     if not os.path.isdir(dirnm):
         os.mkdir(dirnm)
@@ -187,14 +198,14 @@ def main():
     new1   = dated_files[-1][1]
     new2   = dated_files[-2][1]
 
-    print "Oldest:", oldest
-    print "Newest1:", new1
-    print "Newest2:", new2
-
-    untar(oldest)
+    #print "Oldest:", oldest
+    #print "Newest1:", new1
+    #print "Newest2:", new2
+    
+    untar(new2)
     untar(new1)
 
-    a1, b1 = oldest.split('.tar')
+    a1, b1 = new2.split('.tar')
     a2, b2 = new1.split('.tar')
 
 
@@ -215,15 +226,15 @@ def main():
 
 
 
-    check_for_duplicates([dirnm+'/'+a1, dirnm+'/'+a2],commondir)
+    check_for_duplicates([dirnm+'/'+a1, dirnm+'/'+a2],commondir+"/"+a1+a2)
     tar("tmp1.tar.gz", a1,dirnm)
     tar("tmp2.tar.gz", a2,dirnm)
 
     shutil.rmtree(dirnm+'/'+a1)
     shutil.rmtree(dirnm+'/'+a2)
     os.remove(new1)
-    os.remove(oldest)
-    os.rename("tmp1.tar.gz",oldest)
+    os.remove(new2)
+    os.rename("tmp1.tar.gz",new2)
     os.rename("tmp2.tar.gz",new1)
 
     list1 = []
