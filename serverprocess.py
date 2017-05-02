@@ -33,6 +33,7 @@ def sendmail(TO,body,subject):
 def invokepostserver_cmd1(cmd):
     url = ServerConfig.clienturl+'cmd=1:' + cmd
     r = requests.get(url,verify=False)
+    logging.debug("Response from post is: " + str(r))
 
 
 def runfirefox():

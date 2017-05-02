@@ -8,18 +8,21 @@ import reboot_script
 import logging
 
 
-
 def invokepostclient (filename):
     files = {'logFile': open(filename, 'rb')}
     r = requests.post(ClientConfig.serverurl, files=files,verify=False)
+    logging.debug("Response from post is: " + str(r))
 
 def runcommad(cmd):
-
     p = Popen([cmd], stdin=PIPE, shell=True)
-    p.wait()
+    (output, err) = p.communicate()
+    ## Wait for date to terminate. Get return returncode ##
+    p_status = p.wait()
+    logging.debug("Output is: " + str(output))
+    logging.error("Error is: " + str(err)) 
+    logging.debug("Status is: " + str(p_status))   
     
 def startserver():
-    
     serverfname = ClientConfig.dirnm + '/server_clientside.js'
     if not os.path.isfile(serverfname):
         print("File no Exist: Exiting Server Thread......")
@@ -38,11 +41,19 @@ def startserver():
 
 def checknetwork():
     while 1:
-        f = open(ClientConfig.ethpath, "r")
-        if "0\n" ==    f.read():
+        f = open("/sys/class/net/"+ClientConfig.ethpath+"/carrier", "r")
+        try:
+            if "0\n" ==    f.read():
+                logging.debug("Calling reboot script as eth cable is not connected")
+                reboot_script.main()
+                
+                time.sleep(ClientConfig.networkcheck_st)
+        except IOError:
+            cmd = "ifconfig "+ClientConfig.ethpath+" up"
+            runcommad(cmd)
+            logging.debug("Calling reboot script as eth is down")
             reboot_script.main()
-        time.sleep(ClientConfig.networkcheck_st)
-    
+            time.sleep(30)
 
 def getcurrent_url():
     logging.debug("Checking URL")
@@ -80,8 +91,6 @@ def getcurrent_url():
 
 
 def main():
-    
-    
         
     logging.info("Starting main file")
     #TODO: Remove sleep 5
@@ -97,12 +106,11 @@ def main():
 
     t1          = threading.Thread(target=checknetwork)
     t1.daemon   = True
-
     logging.debug ("Check internal Network in a thread:" + t1.name)
     t1.start()
     logging.debug ("Start Server in a thread:" + t.name)
     t.start()
-      
+
     #Create all the logs from the commands
     otherlogdir =  ClientConfig.dirnm + '/otherlogs/'
     if not os.path.isdir(otherlogdir):
