@@ -11,3 +11,5 @@ readonly_pos="2" # Readonly OS position number starting from 0
 reboot_count = 3
 networkcheck_st = 30 #in seconds
 log_interval = 30 #in seconds
+loglevel = 10     # CRITICAL = 50, ERROR = 40, WARNING = 30, INFO = 20, DEBUG = 10, NOTSET = 0
+

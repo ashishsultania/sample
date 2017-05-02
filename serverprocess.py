@@ -4,6 +4,7 @@ import httplib,ssl
 import ServerConfig
 import shutil
 import logmanage
+import logging
 
 
 def read_in():
@@ -54,13 +55,13 @@ def checkhdmicable():
     templist = []
     with open("xrandr.log") as f:
         for line in f:
-            #print line
+            logging.debug(line)
             if " connected" in line:
                 vgaconnect = 1
     f.close()
     
     if vgaconnect == 0:
-        #print "Sending Mail"
+        logging.debug("Sending Mail")
         sendmail(ServerConfig.clientemail, "Please check connection cable manually.\n \n Admin","Display Device Cable disconnected")
     else:
         found_abstract = False
@@ -90,12 +91,12 @@ def managedb(uploaddir,logfolder):
     os.chdir(uploaddir)
     shutil.rmtree(logfolder)
     
-    print "Calling main() of logmanage"
+    logging.debug("Calling main() of logmanage")
     logmanage.main()
 
 
 def main():
-
+    
     filename = read_in()
     #filename = "regular_log_2017-05-02-07-21-41-846312.tar.gz"
     
@@ -111,11 +112,7 @@ def main():
     p = Popen([cmd], stdin=PIPE, shell=True)
     p.wait()
     
-    target = open("output.txt", 'w')
-    target.write("COMMAND DONE\n")  
-    
     mpath = uploaddir+ '/' + a + '/'
-    target.write(mpath)
     for path, subdirs, files in os.walk(mpath):
         for name in subdirs:
             c = path.count('sample')
@@ -124,22 +121,17 @@ def main():
                 break     
     
     path = tpath + '/otherlogs'
-    target.write(path)
     os.chdir(path)
     
-    print (os.getcwd())
-    
-    
-    target.write(os.getcwd())  
-    
+    logging.debug(os.getcwd())
+        
     with open("wmctrl.log") as f:
-        for line in f:
-            #print line
+        for line in f:            
             if ServerConfig.defaultapp in line:
-                #print "Mozilla is running"
+                logging.debug("Mozilla is running")
                 a = line.split(' ')
                 mozilla_win_id = a[0]
-                #print mozilla_win_id
+                logging.debug(mozilla_win_id)
             else:
                 #Default app is not running
                 runfirefox()
@@ -166,21 +158,17 @@ def main():
     
     
     if active_win_id_dec != mozilla_win_id:
-        #print("Not Equal")
+        logging.debug("Not Equal")
         cmd = "xkill -id "+active_win_id_dec
-        target.write(active_win_id_dec)  
+        logging.debug(active_win_id_dec)  
         invokepostserver_cmd1(cmd)
-    
-
-    target.close()
-        
+            
         
     # check the size of browser
     if active_win_id_dec == mozilla_win_id: 
-        #print "Active window is mozilla"   
+        logging.debug("Active window is mozilla")   
         with open("xwininfo.log") as f:
-            for line in f:
-                #print line
+            for line in f:                
                 if "geometry" in line:             
                     desktop_geom = ((line.split(' ')[3].rstrip()).split('+')[0].split('x'))
                 if ServerConfig.defaultapp in line:
@@ -201,7 +189,7 @@ def main():
     
     
         if x != 0 or y!=0:
-            print("Toolbar enabled")
+            logging.debug("Toolbar enabled")
             cmd = "gsettings set org.compiz.unityshell:/org/compiz/profiles/unity/plugins/unityshell/ launcher-hide-mode 1"
             invokepostserver_cmd1(cmd)
     
@@ -220,6 +208,7 @@ def main():
 
 
 if(__name__ == "__main__"):
+    logging.basicConfig(filename='serverlog.txt', filemode='w', level=ServerConfig.loglevel, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s')
     main()
 
 

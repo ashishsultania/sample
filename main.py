@@ -5,6 +5,9 @@ import memuse
 import json
 import ClientConfig
 import reboot_script
+import logging
+
+
 
 def invokepostclient (filename):
     files = {'logFile': open(filename, 'rb')}
@@ -42,9 +45,10 @@ def checknetwork():
     
 
 def getcurrent_url():
+    logging.debug("Checking URL")
     mozdir = ClientConfig.basedir + '/.mozilla/firefox/'
     target = open("otherlogs/currenturl.log", 'w')
-    
+
     tabs = []
     active_urlindex = 0
     for root, dirs, files in os.walk(mozdir):
@@ -54,8 +58,7 @@ def getcurrent_url():
                 filepath = filepath + '/sessionstore-backups'
                 for root, dirs, files in os.walk(filepath):
                     for name in files:
-                        if name == 'recovery.js':
-                                            
+                        if name == 'recovery.js':                                            
                             f = open(filepath + "/"+name, "r")
                             jdata = json.loads(f.read())
                             f.close()
@@ -77,35 +80,42 @@ def getcurrent_url():
 
 
 def main():
+    
+    
         
-    #Start server at client side in a thread
+    logging.info("Starting main file")
+    #TODO: Remove sleep 5
     time.sleep(5)
- 
+    
     if not os.path.isdir(ClientConfig.dirnm):
         os.mkdir(ClientConfig.dirnm)
     os.chdir(ClientConfig.dirnm)
+    logging.debug ("Working Directory:" + os.getcwd())
     
     t           = threading.Thread(target=startserver)
     t.daemon    = True
+
     t1          = threading.Thread(target=checknetwork)
     t1.daemon   = True
 
+    logging.debug ("Check internal Network in a thread:" + t1.name)
     t1.start()
+    logging.debug ("Start Server in a thread:" + t.name)
     t.start()
-    #print ("Server loop running in thread:", t.name)
-    #thread.start_new_thread( startserver, ("Thread-1",) )
-    
+      
     #Create all the logs from the commands
     otherlogdir =  ClientConfig.dirnm + '/otherlogs/'
     if not os.path.isdir(otherlogdir):
         os.mkdir(otherlogdir)
-    
+    logging.debug ("Working Directory:" + os.getcwd())
     
     
     while 1:
+        logging.debug ("Inside While")
         os.chdir(ClientConfig.dirnm)
-        #print(os.getcwd())
+        logging.debug ("Working Directory:" + os.getcwd())
         
+        logging.debug ("Getting current URL")
         getcurrent_url()
         cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
            'wmctrl -l > otherlogs/wmctrl.log',
@@ -168,6 +178,7 @@ def main():
         
                 
 if(__name__ == "__main__"):
+    logging.basicConfig(filename='clientlog.txt', filemode='w', level=ClientConfig.loglevel, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s')
     main()
     
     
