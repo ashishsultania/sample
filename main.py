@@ -11,7 +11,6 @@ def invokepostclient (filename):
     r = requests.post(ClientConfig.serverurl, files=files,verify=False)
 
 def runcommad(cmd):
-    print(cmd)
 
     p = Popen([cmd], stdin=PIPE, shell=True)
     p.wait()
@@ -127,7 +126,8 @@ def main():
         #Create periodic logs
         timformat='%Y-%m-%d-%H-%M-%S-%f'
         tim=datetime.now().strftime(timformat)
-        filename = "regular_log_" + tim +".tar"
+        foldername = "regular_log_" + tim
+        filename = foldername +".tar"
         time.sleep(5)
         plogdir =  ClientConfig.dirnm + '/periodic_log'
         if not os.path.isdir(plogdir):
@@ -161,6 +161,11 @@ def main():
         
         invokepostclient(filename+".gz")
         time.sleep(10)
+        
+        os.remove(filename+".gz")
+        
+        time.sleep(ClientConfig.log_interval)
+        
                 
 if(__name__ == "__main__"):
     main()
