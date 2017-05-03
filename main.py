@@ -10,14 +10,19 @@ import logging
 
 def invokepostclient (filename):
     files = {'logFile': open(filename, 'rb')}
-    r = requests.post(ClientConfig.serverurl, files=files,verify=False)
-    logging.debug("Response from post is: " + str(r))
+    try:
+        r = requests.post(ClientConfig.serverurl, files=files,verify=False)
+        logging.debug("Response from post is: " + str(r))
+    except:
+        logging.error("Connection refused to send log: " + filename)
+        pass
 
 def runcommad(cmd):
     p = Popen([cmd], stdin=PIPE, shell=True)
     (output, err) = p.communicate()
     ## Wait for date to terminate. Get return returncode ##
     p_status = p.wait()
+    logging.debug("Command is: " + str(cmd))
     logging.debug("Output is: " + str(output))
     logging.error("Error is: " + str(err)) 
     logging.debug("Status is: " + str(p_status))   
@@ -25,9 +30,9 @@ def runcommad(cmd):
 def startserver():
     serverfname = ClientConfig.dirnm + '/server_clientside.js'
     if not os.path.isfile(serverfname):
-        print("File no Exist: Exiting Server Thread......")
+        logging.debug("File no Exist: Exiting Server Thread......")
         sys.exit()
-    print(serverfname)   
+    logging.debug(serverfname)   
 
     os.chdir(ClientConfig.dirnm)
     cmd = "node server_clientside.js"
@@ -36,7 +41,7 @@ def startserver():
     #os.system(cmd)
     time.sleep(2)
 
-    #print("Server stared done")
+    logging.debug("Server stared done")
 
 
 def checknetwork():
