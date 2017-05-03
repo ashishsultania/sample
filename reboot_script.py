@@ -1,8 +1,6 @@
 import os
-import shutil
 from datetime import datetime
 from subprocess import Popen, PIPE
-import sys,json
 import ClientConfig
 
 timformat='%Y-%m-%d %H:%M:%S.%f'

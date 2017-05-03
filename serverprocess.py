@@ -68,7 +68,7 @@ def checkhdmicable():
         found_abstract = False
         with open("ddccontrol.log") as f2:
             for line2 in f2:
-                if "Color settings" not in line:
+                if "Color settings" not in line2:
                     colorflag = 1
                 if 'Power' in line2:
                     found_abstract = True
