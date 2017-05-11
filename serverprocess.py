@@ -53,6 +53,7 @@ def checkhdmicable():
 
     colorflag = 0   
     vgaconnect = 0
+    ddcc_support = 1
     templist = []
     with open("xrandr.log") as f:
         for line in f:
@@ -75,6 +76,8 @@ def checkhdmicable():
                 if found_abstract:
                     if 'address' in line2:
                         templist = line2.split(',')
+                if 'No monitor supporting DDC/CI available' in line2:
+                    ddcc_support = 0
         f2.close()
         
         #TODO: This will not affect the variable value
@@ -84,10 +87,11 @@ def checkhdmicable():
         
     
         #Case of Monitor is powered off
-        if colorflag == 1:  
+        if colorflag == 1 and ddcc_support == 1:  
             cmd = "ddccontrol -p -r "+ServerConfig.displayaddr+" -w 1" 
             invokepostserver_cmd1(cmd)
-
+            
+            
 def managedb(uploaddir,logfolder):
     os.chdir(uploaddir)
     shutil.rmtree(logfolder)
