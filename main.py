@@ -136,7 +136,7 @@ def main():
            'xwd -root -out otherlogs/filename.xwd',
            'xwininfo -root -all > otherlogs/xwininfo.log',
            'xrandr > otherlogs/xrandr.log',
-           'ddccontrol -p > otherlogs/ddccontrol.log',
+           'ddccontrol -p > otherlogs/ddccontrol.log 2>&1',
            'lshw > otherlogs/lshw.log',
            'convert -scale 100% -compress JPEG otherlogs/filename.xwd otherlogs/filename.jpeg'
            ]
