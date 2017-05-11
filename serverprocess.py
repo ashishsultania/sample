@@ -125,7 +125,7 @@ def main():
     os.chdir(path)
     
     logging.debug(os.getcwd())
-        
+    moz_run = 0
     with open("wmctrl.log") as f:
         for line in f:            
             if ServerConfig.defaultapp in line:
@@ -133,14 +133,15 @@ def main():
                 a = line.split(' ')
                 mozilla_win_id = a[0]
                 logging.debug(mozilla_win_id)
-            else:
-                #Default app is not running
-                runfirefox()
-                checkhdmicable()
-                managedb(uploaddir,a)
-                return
-                
+                moz_run = 1
     f.close()
+    if moz_run == 0:
+        #Default app is not running
+        runfirefox()
+        checkhdmicable()
+        managedb(uploaddir,a)
+        return
+                
 
     hex_int = int(mozilla_win_id, 16)
     mozilla_win_id = hex(hex_int)
