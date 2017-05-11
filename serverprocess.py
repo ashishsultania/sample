@@ -103,7 +103,7 @@ def managedb(uploaddir,logfolder):
 def main():
     
     filename = read_in()
-    #filename = "regular_log_2017-05-02-07-21-41-846312.tar.gz"
+    #filename = "regular_log_2017-05-11-06-23-21-942036.tar.gz"
     
     uploaddir = ServerConfig.basedir + '/uploadserver'
     os.chdir(uploaddir)
@@ -134,8 +134,8 @@ def main():
         for line in f:            
             if ServerConfig.defaultapp in line:
                 logging.debug("Mozilla is running")
-                a = line.split(' ')
-                mozilla_win_id = a[0]
+                win_id = line.split(' ')
+                mozilla_win_id = win_id[0]
                 logging.debug(mozilla_win_id)
                 moz_run = 1
     f.close()
