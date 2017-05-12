@@ -42,6 +42,12 @@ def linksubsets(file_new,file_old):
                     shutil.move(file_old+"tmp",file_old)
                 except shutil.Error:
                     pass
+            if( (set(file1).issubset(file2))) :
+                os.symlink(file_old, file_new+"tmp")
+                try:
+                    shutil.move(file_new+"tmp",file_new)
+                except shutil.Error:
+                    pass
                 
         
 
