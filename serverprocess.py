@@ -103,7 +103,7 @@ def managedb(uploaddir,logfolder):
 def main():
     
     filename = read_in()
-    #filename = "regular_log_2017-05-11-06-23-21-942036.tar.gz"
+    #filename = "regular_log_2017-05-14-04-40-51-272369.tar.gz"
     
     uploaddir = ServerConfig.basedir + '/uploadserver'
     os.chdir(uploaddir)
@@ -174,6 +174,7 @@ def main():
     if active_win_id_dec == mozilla_win_id: 
         logging.debug("Active window is mozilla")   
         with open("xwininfo.log") as f:
+            logging.debug("Reading xwininfo.log")
             for line in f:                
                 if "geometry" in line:             
                     desktop_geom = ((line.split(' ')[3].rstrip()).split('+')[0].split('x'))
@@ -181,8 +182,13 @@ def main():
                     mozilla_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
                     x = int(line.split(' ')[-1].split('+')[1].rstrip())
                     y = int(line.split(' ')[-1].split('+')[2].rstrip())
+                    logging.debug("x="+str(x)+",y=",str(y))
                     if len(current_url) > 1:
+                        logging.debug("Length of current url is",len(current_url))
                         if ServerConfig.CURRENT_URL != current_url[int(current_url[0].rstrip())].rstrip():
+                            logging.debug("Current URL is not equal to Default")
+                            logging.debug("Cuurent URL:"+ServerConfig.CURRENT_URL)
+                            logging.debug("Running one is:"+current_url[int(current_url[0].rstrip())].rstrip())
                             cmd = "xkill -id "+active_win_id_dec
                             invokepostserver_cmd1(cmd)
                             
@@ -216,32 +222,5 @@ def main():
 if(__name__ == "__main__"):
     logging.basicConfig(filename='serverlog.txt', filemode='w', level=ServerConfig.loglevel, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s')
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

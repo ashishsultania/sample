@@ -34,22 +34,31 @@ def get_hash(filename, first_chunk_only=False, hash=hashlib.sha1):
 def linksubsets(file_new,file_old):
     file_new = ''.join(file_new)
     file_old = ''.join(file_old)
+    flinkdone = 0
     with open(file_new, 'r') as file1:
         with open(file_old, 'r') as file2:
             if( (set(file2).issubset(file1))) :
+                flinkdone = 1
                 os.symlink(file_new, file_old+"tmp")
                 try:
                     shutil.move(file_old+"tmp",file_old)
                 except shutil.Error:
                     pass
-            if( (set(file1).issubset(file2))) :
-                os.symlink(file_old, file_new+"tmp")
-                try:
-                    shutil.move(file_new+"tmp",file_new)
-                except shutil.Error:
-                    pass
-                
-        
+    file2.close()
+    file1.close()
+
+    if (flinkdone == 0):
+        with open(file_new, 'r') as file1:
+            with open(file_old, 'r') as file2:
+                if( (set(file1).issubset(file2))) :
+                    os.symlink(file_old, file_new+"tmp")
+                    try:
+                        shutil.move(file_new+"tmp",file_new)
+                    except shutil.Error:
+                        pass
+        file2.close()
+        file1.close()
+
 
 def check_for_duplicates(paths, commondir):
     hashes_by_size = {}
