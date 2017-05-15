@@ -12,12 +12,12 @@ var options = {
 				requestCert: true,
 				rejectUnauthorized: false
 };
-
+var path_val;
 app.set('port', port); 
 var storage =   multer.diskStorage({
 	destination: function (req, file, callback) 
 	{
-		callback(null, './uploadclient');
+		callback(null, path_val);
 	},
     filename: function (req, file, callback) 
     {
@@ -25,6 +25,9 @@ var storage =   multer.diskStorage({
     }
 });
 var upload = multer({ storage : storage}).single('logFile');
+
+var save = multer({ storage : storage}).single('logFile');
+
 
 
 app.get('/', function(request, response) 
@@ -43,6 +46,7 @@ app.get('/', function(request, response)
 
 app.post('/upload', function(request, response) 
 {
+	path_val = './uploadclient'
     upload(request, response, function(err) 
     {
         if(err) 
@@ -59,10 +63,29 @@ app.post('/upload', function(request, response)
 
   
         console.log(request.file.originalname);
-        response.end('Your File Uploaded');
-        console.log('File Uploaded');
+        response.end('Your File Uploaded /upload');
+        console.log('File Uploaded /upload');
     })
 });
+
+app.post('/save', function(request, response) 
+{
+	path_val = './'
+	save(request, response, function(err) 
+    {
+        if(err) 
+        {
+        	console.log(err);
+        	return;
+        }
+  		     
+  
+        console.log(request.file.originalname);
+        response.end('Your File Uploaded /save');
+        console.log('File Uploaded /save');
+    })
+});
+
 
 https.createServer(options, app).listen(8081, function () 
 {

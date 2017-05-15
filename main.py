@@ -3,15 +3,14 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 import memuse
 import json
-import ClientConfig
 import reboot_script
 import logging
 
 
-def invokepostclient (filename):
+def invokepostclient (filename,CConfig):
     files = {'logFile': open(filename, 'rb')}
     try:
-        r = requests.post(ClientConfig.serverurl, files=files,verify=False)
+        r = requests.post(CConfig.serverurl, files=files,verify=False)
         logging.debug("Response from post is: " + str(r))
     except:
         logging.error("Connection refused to send log: " + filename)
@@ -27,14 +26,14 @@ def runcommad(cmd):
     logging.error("Error is: " + str(err)) 
     logging.debug("Status is: " + str(p_status))   
     
-def startserver():
-    serverfname = ClientConfig.dirnm + '/server_clientside.js'
+def startserver(CConfig):
+    serverfname = CConfig.dirnm + '/server_clientside.js'
     if not os.path.isfile(serverfname):
         logging.debug("File no Exist: Exiting Server Thread......")
         sys.exit()
     logging.debug(serverfname)   
 
-    os.chdir(ClientConfig.dirnm)
+    os.chdir(CConfig.dirnm)
     cmd = "node server_clientside.js"
     p = Popen([cmd], stdin=PIPE, shell=True)
     #cmd = "sudo node server_clientside.js"
@@ -44,25 +43,25 @@ def startserver():
     logging.debug("Server stared done")
 
 
-def checknetwork():
+def checknetwork(CConfig):
     while 1:
-        f = open("/sys/class/net/"+ClientConfig.ethpath+"/carrier", "r")
+        f = open("/sys/class/net/"+CConfig.ethpath+"/carrier", "r")
         try:
             if "0\n" ==    f.read():
                 logging.debug("Calling reboot script as eth cable is not connected")
                 reboot_script.main()
                 
-                time.sleep(ClientConfig.networkcheck_st)
+                time.sleep(CConfig.networkcheck_st)
         except IOError:
-            cmd = "ifconfig "+ClientConfig.ethpath+" up"
+            cmd = "ifconfig "+CConfig.ethpath+" up"
             runcommad(cmd)
             logging.debug("Calling reboot script as eth is down")
             reboot_script.main()
             time.sleep(30)
 
-def getcurrent_url():
+def getcurrent_url(CConfig):
     logging.debug("Checking URL")
-    mozdir = ClientConfig.basedir + '/.mozilla/firefox/'
+    mozdir = CConfig.basedir + '/.mozilla/firefox/'
     target = open("otherlogs/currenturl.log", 'w')
 
     tabs = []
@@ -95,21 +94,21 @@ def getcurrent_url():
     return("Mozilla is closed: recovery.js not exist")
 
 
-def main():
+def main(CConfig):
         
     logging.info("Starting main file")
     #TODO: Remove sleep 5
     time.sleep(5)
     
-    if not os.path.isdir(ClientConfig.dirnm):
-        os.mkdir(ClientConfig.dirnm)
-    os.chdir(ClientConfig.dirnm)
+    if not os.path.isdir(CConfig.dirnm):
+        os.mkdir(CConfig.dirnm)
+    os.chdir(CConfig.dirnm)
     logging.debug ("Working Directory:" + os.getcwd())
     
-    t           = threading.Thread(target=startserver)
+    t           = threading.Thread(target=startserver,args=(CConfig,))
     t.daemon    = True
 
-    t1          = threading.Thread(target=checknetwork)
+    t1          = threading.Thread(target=checknetwork,args=(CConfig,))
     t1.daemon   = True
     logging.debug ("Check internal Network in a thread:" + t1.name)
     t1.start()
@@ -117,19 +116,27 @@ def main():
     t.start()
 
     #Create all the logs from the commands
-    otherlogdir =  ClientConfig.dirnm + '/otherlogs/'
+    otherlogdir =  CConfig.dirnm + '/otherlogs/'
     if not os.path.isdir(otherlogdir):
         os.mkdir(otherlogdir)
     logging.debug ("Working Directory:" + os.getcwd())
     
     
     while 1:
+        try:
+            import ClientConfigNew as CConfig
+            logging.debug("Importing ClientConfigNew in while")
+        except:
+            logging.debug ("Importing ClientConfig in while")
+            import ClientConfig as CConfig
+            
+
         logging.debug ("Inside While")
-        os.chdir(ClientConfig.dirnm)
+        os.chdir(CConfig.dirnm)
         logging.debug ("Working Directory:" + os.getcwd())
         
         logging.debug ("Getting current URL")
-        getcurrent_url()
+        getcurrent_url(CConfig)
         cmd = ['powertop --csv=otherlogs/powertop_report.txt --time=1s',
            'wmctrl -l > otherlogs/wmctrl.log',
            'xdotool getwindowfocus > otherlogs/activeterminal.log',
@@ -144,7 +151,7 @@ def main():
         for i in range(len(cmd)-1):
             runcommad(cmd[i])
             
-        memuse.getmemuse(ClientConfig.dirnm + '/otherlogs/memuse')
+        memuse.getmemuse(CConfig.dirnm + '/otherlogs/memuse')
         
         #Create periodic logs
         timformat='%Y-%m-%d-%H-%M-%S-%f'
@@ -152,7 +159,7 @@ def main():
         foldername = "regular_log_" + tim
         filename = foldername +".tar"
         time.sleep(5)
-        plogdir =  ClientConfig.dirnm + '/periodic_log'
+        plogdir =  CConfig.dirnm + '/periodic_log'
         if not os.path.isdir(plogdir):
             os.mkdir(plogdir)
         os.chdir(plogdir)
@@ -166,8 +173,8 @@ def main():
                  '/var/run/utmp',
                  '/var/log/gpu-manager.log',
                  '/var/log/journal/',
-                 ClientConfig.basedir +'/.mozilla/firefox/Crash\ Reports/',
-                 ClientConfig.basedir +'/sample/otherlogs/'
+                 CConfig.basedir +'/.mozilla/firefox/Crash\ Reports/',
+                 CConfig.basedir +'/sample/otherlogs/'
                  ]
         cmd = "tar cPf "+ filename  + " " + fname[0]
 
@@ -182,16 +189,21 @@ def main():
         runcommad(cmd)   
         
         
-        invokepostclient(filename+".gz")
+        invokepostclient(filename+".gz",CConfig)
         time.sleep(10)
         
         os.remove(filename+".gz")
         
-        time.sleep(ClientConfig.log_interval)
+        time.sleep(CConfig.log_interval)
         
                 
 if(__name__ == "__main__"):
-    logging.basicConfig(filename='clientlog.txt', filemode='w', level=ClientConfig.loglevel, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s')
-    main()
+    try:
+        import ClientConfigNew as CConfig        
+    except:
+        import ClientConfig as CConfig
+        
+    logging.basicConfig(filename='clientlog.txt', filemode='w', level=CConfig.loglevel, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s')
+    main(CConfig)
     
     

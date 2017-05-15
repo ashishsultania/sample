@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from subprocess import Popen, PIPE
-import ClientConfig
 
 timformat='%Y-%m-%d %H:%M:%S.%f'
 
@@ -13,7 +12,7 @@ def ctime():
     lines=datetime.now().strftime(timformat)
     return lines
 
-def read_in():
+def read_in(CConfig):
     id_dbus=""
     global id_tochange
 
@@ -22,10 +21,10 @@ def read_in():
     f.close()
     print (id_dbus)
 
-    if id_dbus == ClientConfig.id1:
+    if id_dbus == CConfig.id1:
         os.chdir('/home/sultana1/sample')
-        id_tochange = ClientConfig.readonly_pos
-    elif id_dbus == ClientConfig.id2:
+        id_tochange = CConfig.readonly_pos
+    elif id_dbus == CConfig.id2:
         os.chdir('/mnt/home/sultana1/sample')
         id_tochange = "0"
     else:
@@ -36,8 +35,14 @@ def read_in():
 def main():
     global id_tochange
     global timformat
+    
+    try:
+        import ClientConfigNew as CConfig        
+    except:
+        import ClientConfig as CConfig
+        
     lines = ctime()
-    read_in()
+    read_in(CConfig)
     
     
     
@@ -60,7 +65,7 @@ def main():
   
     numlines = sum(1 for line in open('date.txt'))
     cmd = ['grub-set-default ','reboot','rm date.txt']
-    if numlines == ClientConfig.reboot_count:
+    if numlines == CConfig.reboot_count:
         p = Popen([cmd[0] + id_tochange], stdin=PIPE, shell=True)
         p.wait()
         p = Popen([cmd[1]], stdin=PIPE, shell=True)
