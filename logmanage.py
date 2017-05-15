@@ -32,9 +32,20 @@ def get_hash(filename, first_chunk_only=False, hash=hashlib.sha1):
     return hashed
 
 def linksubsets(file_new,file_old):
-    file_new = ''.join(file_new)
-    file_old = ''.join(file_old)
+    file_new_ = ''.join(file_new)
+    file_old_ = ''.join(file_old)
     flinkdone = 0
+    
+    if os.path.islink(file_new_) == True:
+        file_new = os.path.realpath(file_new_)
+    else:
+        file_new = file_new_
+
+    if os.path.islink(file_old_) == True:
+        file_old = os.path.realpath(file_old_)
+    else:
+        file_old = file_old_
+    
     with open(file_new, 'r') as file1:
         with open(file_old, 'r') as file2:
             if( (set(file2).issubset(file1))) :
