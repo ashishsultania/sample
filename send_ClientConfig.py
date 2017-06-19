@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
-import requests
+import requests, ServerConfig
 
-url = 'https://172.16.227.1:8081/save'
+url = ServerConfig.clienturl+'/save'
+
 files = {'logFile': open('ClientConfigNew.py', 'rb')}
 r = requests.post(url, files=files,verify=False)
 

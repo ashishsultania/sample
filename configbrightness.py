@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-import requests
+import requests, ServerConfig
 
-url = 'https://130.233.193.126:8081/upload'
+url = ServerConfig.clienturl+'/upload'
 files = {'logFile': open('configbrightness.sh', 'rb')}
 r = requests.post(url, files=files,verify=False)
