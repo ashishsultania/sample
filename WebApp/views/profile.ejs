@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-    <script type="text/javascript" src="/qrcode.js"></script>
     <style>
         body { 
           padding-top:80px; 
@@ -92,8 +91,13 @@
     <div class="page-header text-center">
         <h1 style="color:#0099ff"> Display Manager <br> <br> <br> <br> </h1>
         <h3 align="justify" style="color:#003300"><tab2>   Choose your action: </tab2> <br> <br> </h3>
-        <a onClick="closeDisplay()" class="btn btn-default btn-sm">Close Display</a>
+        <a onClick="sendscripthtml('/closedisplay/')" class="btn btn-default btn-sm">Close Display</a>
+        <a onClick="sendscripthtml('/turnondisplay/')" class="btn btn-default btn-sm">TurnOn Display</a>
+        <a onClick="sendscripthtml('/coleft/')" class="btn btn-default btn-sm">Change Orientation Left</a>
+        <a onClick="sendscripthtml('/coright/')" class="btn btn-default btn-sm">Change Orientation Right</a>
+        <br> <br>
 		<a href="/configClients" class="btn btn-default btn-sm">Client Configuration</a>
+		<a href="/other" class="btn btn-default btn-sm">Debug Display</a>
 	    <br> <br> <br> <br> <br>
 		
     </div>
@@ -123,19 +127,39 @@
 <script>
 
 
-function closeDisplay(clients){
+function sendscripthtml(value){
 	var url_str = "<%=url%>";
-	url_str = url_str + "/sendClients/"; 
-	console.log(clients);
-        var xhttp = new XMLHttpRequest();
+	url_str = url_str + value; 
+    var xhttp = new XMLHttpRequest();
   	xhttp.onreadystatechange = function() {
     		if (xhttp.readyState == 4 && xhttp.status == 200) {
 			var obj = JSON.parse(xhttp.responseText);
 			var div_alert = document.getElementById('message_div');
 			if(obj.status == "success"){
-				div_alert.innerHTML = "Display closed Successfully";
-				div_alert.style.display='block';
-				setTimeout(stopLoading, 1000);
+				if(value == '/closedisplay/'){
+					div_alert.innerHTML = "Display closed Successfully";
+					div_alert.style.display='block';
+					setTimeout(stopLoading, 1000);
+				}
+
+				if(value == '/turnondisplay/'){
+					div_alert.innerHTML = "Display Turned On Successfully";
+					div_alert.style.display='block';
+					setTimeout(stopLoading, 1000);
+				}
+				
+				if(value == '/coleft/'){
+					div_alert.innerHTML = "Orientation Changed Successfully";
+					div_alert.style.display='block';
+					setTimeout(stopLoading, 1000);
+				}
+				
+				if(value == '/coright/'){
+					div_alert.innerHTML = "Orientation Changed Successfully";
+					div_alert.style.display='block';
+					setTimeout(stopLoading, 1000);
+				}												
+				
 		
 			}
 			else if(obj.status == "refresh"){

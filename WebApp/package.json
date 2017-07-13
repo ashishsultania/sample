@@ -1,6 +1,6 @@
 {
   "name": "node-authentication",
-  "main": "server.js",
+  "main": "logcollector.js",
   "dependencies": {
     "express": "^4.13.3",
     "ejs": "~0.8.5",
@@ -24,7 +24,7 @@
     "csv-parse":"*"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node logcollector.js"
   },
   "version": "0.0.0",
   "description": "ERROR: No README data found!",
@@ -33,9 +33,6 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "https://github.com/tuomaura/eap-noob"
-  },
-  "bugs": {
-    "url": "https://github.com/tuomaura/eap-noob/issues"
+    "url": "https://github.com/ashishsultania/sample"
   }
 }

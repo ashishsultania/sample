@@ -1,16 +1,19 @@
-import os, requests,sys, json, time
-from subprocess import Popen, PIPE
-import httplib,ssl
-import ServerConfig
+import io
+import os
+import sys
+import json
+import time
 import shutil
-import logmanage
+import signal
 import logging
+import requests
+import logmanage
+import ServerConfig
 
+from subprocess import Popen, PIPE
 
-def read_in():
-    lines = sys.stdin.readlines()
-    #Since our input would only be having one line, parse our JSON data from that
-    return json.loads(lines[0])
+global cmdlist
+
 
 def sendmail(TO,body,subject):
     # Import smtplib for the actual sending function
@@ -30,31 +33,50 @@ def sendmail(TO,body,subject):
     s.quit()
 
 
-def invokepostserver_cmd1(cmd):
-    url = ServerConfig.clienturl+'cmd=1:' + cmd
-    r = requests.get(url,verify=False)
-    logging.debug("Response from post is: " + str(r))
+def entercmd(cmd):
+    global cmdlist
+    
+    logging.debug(cmd)
+    
+    cmdlist.append(cmd)
+    
+def sendcmd(pid):
+    global cmdlist
+    
+    os.chdir(ServerConfig.basedir)
+    
+    
+    device_str = {}
+    device_str['cmd'] = cmdlist
+
+    logging.debug("returning data" + json.dumps(device_str) )
+
+    with open('cmdfile.json', 'w') as f:
+        json.dump(device_str, f, indent = 4, ensure_ascii=False)
+
+    f.close()
+
+    os.kill(int(pid), signal.SIGUSR2)
+    
 
 
 def runfirefox():
     cmd = "firefox " + ServerConfig.CURRENT_URL
-    invokepostserver_cmd1(cmd)
-    
-    time.sleep(4)
-    
+    entercmd(cmd)
+        
     cmd = "wmctrl -r mozilla -b add,fullscreen"
-    invokepostserver_cmd1(cmd)
+    entercmd(cmd)
     if "youtube.com" in ServerConfig.CURRENT_URL:
-        time.sleep(4)
         cmd = "xdotool key F"
-        invokepostserver_cmd1(cmd)
+        entercmd(cmd)
 
 def checkhdmicable():
 
-    colorflag = 0   
-    vgaconnect = 0
-    ddcc_support = 1
-    templist = []
+    colorflag       = 0   
+    vgaconnect      = 0
+    ddcc_support    = 1
+    templist        = []
+    
     with open("xrandr.log") as f:
         for line in f:
             logging.debug(line)
@@ -89,7 +111,7 @@ def checkhdmicable():
         #Case of Monitor is powered off
         if colorflag == 1 and ddcc_support == 1:  
             cmd = "ddccontrol -p -r "+ServerConfig.displayaddr+" -w 1" 
-            invokepostserver_cmd1(cmd)
+            entercmd(cmd)
             
             
 def managedb(uploaddir,logfolder):
@@ -100,10 +122,15 @@ def managedb(uploaddir,logfolder):
     logmanage.main()
 
 
-def main():
+def main(argv):
     
-    filename = read_in()
-    #filename = "regular_log_2017-05-14-04-40-51-272369.tar.gz"
+    global cmdlist
+
+    cmdlist = []
+    pid = sys.argv[2]
+    logging.debug(pid)
+    filename = (sys.argv[1])
+    logging.debug(filename)
     
     uploaddir = ServerConfig.basedir + '/uploadserver'
     os.chdir(uploaddir)
@@ -142,9 +169,17 @@ def main():
     if moz_run == 0:
         #Default app is not running
         runfirefox()
+        
         checkhdmicable()
-        managedb(uploaddir,a)
-        return
+        #managedb(uploaddir,a)
+        logging.debug("Calling sendcmd()" );
+        sendcmd(pid)
+        
+
+        
+        
+        logging.debug("Calling exit()" );
+        sys.exit(0)
                 
 
     hex_int = int(mozilla_win_id, 16)
@@ -167,7 +202,7 @@ def main():
         logging.debug("Not Equal")
         cmd = "xkill -id "+active_win_id_dec
         logging.debug(active_win_id_dec)  
-        invokepostserver_cmd1(cmd)
+        entercmd(cmd)
             
         
     # check the size of browser
@@ -190,7 +225,7 @@ def main():
                             logging.debug("Cuurent URL:"+ServerConfig.CURRENT_URL)
                             logging.debug("Running one is:"+current_url[int(current_url[0].rstrip())].rstrip())
                             cmd = "xkill -id "+active_win_id_dec
-                            invokepostserver_cmd1(cmd)
+                            entercmd(cmd)
                             
                             runfirefox()
                                 
@@ -203,17 +238,20 @@ def main():
         if x != 0 or y!=0:
             logging.debug("Toolbar enabled")
             cmd = "gsettings set org.compiz.unityshell:/org/compiz/profiles/unity/plugins/unityshell/ launcher-hide-mode 1"
-            invokepostserver_cmd1(cmd)
+            entercmd(cmd)
     
      
         if int(desktop_geom[0])*int(desktop_geom[1]) > int(mozilla_browser_geom[0])*int(mozilla_browser_geom[1]):
             #cmd = "wmctrl -r mozilla -b add,fullscreen"
             cmd = "xdotool key F11"
-            invokepostserver_cmd1(cmd)
+            entercmd(cmd)
     
     checkhdmicable()
 
     managedb(uploaddir,a)
+    
+    sendcmd(pid)
+    
     
 
     
@@ -221,6 +259,5 @@ def main():
 
 if(__name__ == "__main__"):
     logging.basicConfig(filename='serverlog.txt', filemode='w', level=ServerConfig.loglevel, format='%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s')
-    main()
-
+    main(sys.argv)
 

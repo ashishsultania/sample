@@ -1,33 +1,24 @@
 // app/routes.js
-var sqlite3 = require('sqlite3').verbose();
-var db;
+var sqlite3 	= require('sqlite3').verbose();
+var PythonShell = require('python-shell');
+var configDB 	= require('./config/database.js');
+var fs 			= require('fs');
+var lineReader 	= require('line-reader');
+var parse 		= require('csv-parse');
+var url 		= require('url');
 
-var configDB = require('../config/database.js');
+var db;
+var basedir = configDB.basedir;
 var conn_str = configDB.dbPath;
 
-var rad_cli_path = configDB.radCliPath;
+var clientconfiguration = basedir + "Server/ClientConfigNew.py"
+var path 		= basedir + 'WebApp/views/'
+var script_path = basedir + 'Scripts/'
+		
+var common = require('../Server/common');
+var connMap = common.connMap;
 
-var PythonShell = require('python-shell');
 
-
-var fs = require('fs');
-var lineReader = require('line-reader');
-
-var parse = require('csv-parse');
-
-var multer  =   require('multer');
-var storage =   multer.diskStorage({
-  destination: function (req, file, callback) {
-    callback(null, './uploads');
-  },
-  filename: function (req, file, callback) {
-    callback(null, file.fieldname +'.csv');
-  }
-});
-//var sleep = require('sleep');
-var upload = multer({ storage : storage}).single('logFile');
-
-var url = require('url');
 var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
 var error_info = [ "No error",
                              "Invalid NAI or peer state",
@@ -42,23 +33,132 @@ var error_info = [ "No error",
                              "No mutually supported cryptosuite",
                              "No mutually supported OOB direction",
                              "MAC verification failure"];
+
+
+function base64_encode(file) {
+    // read binary data
+    var bitmap = fs.readFileSync(file);
+    // convert binary data to base64 encoded string
+    return new Buffer(bitmap).toString('base64');
+}
+
+
+function base64_decode(str_cont) {
+    // read binary data
+    var buf = new Buffer(str_cont,'base64');
+    return buf;
+}
+
+
+function sendcmd(file) {
+    
+    console.log(process.cwd())
+    var cmddata = JSON.parse(fs.readFileSync(file, 'utf8'));
+    //fs.readFile('cmdfile.txt', 'utf8', function(err, contents) { 
+       // cmddata = JSON.parse(contents);
+    
+    var cmdsize = (Object.keys(cmddata).length);
+    
+    
+    for(var i = 0; i<= cmdsize; i++) {
+        var content = cmddata['cmd'][i];
+        var jsonData = {
+            'userID': "1234",
+            'type': "cmd",
+            'content': content
+        }; 
+        console.log(content);
+        setTimeout(function(){connMap[1].send(JSON.stringify(jsonData));},4000);
+         
+    }
+    
+
+}
+
+
+function sendfile(file){
+
+   var content = base64_encode(file);
+   
+   var name = file.match(/([^\/]*)\/*$/)[1];
+   
+   var jsonData = {
+       'userID': "1234",
+       'type': "save",
+       'name':name,
+       'content': content
+    }; 
+
+    connMap[1].send(JSON.stringify(jsonData));
+
+}
+
+
+function sendscript(file){
+
+   var content = base64_encode(file);
+   console.log("Inside sendscript()");
+   console.log(content);
+   
+   var name = file.match(/([^\/]*)\/*$/)[1];
+   
+   var jsonData = {
+       'userID': "1234",
+       'type': "execute",
+       'name':name,
+       'content': content
+    }; 
+
+    connMap[1].send(JSON.stringify(jsonData));
+
+}
+
+function askreport(cmd){
+   var jsonData = {
+	       'userID': "1234",
+	       'type': "reportexe",
+	       'content': cmd
+	    }; 
+
+	    connMap[1].send(JSON.stringify(jsonData));
+	
+}
+
+function askreportscript(cmdfile){
+	   console.log(cmdfile)
+	   var content = base64_encode(cmdfile);
+	   
+	   var name = file.match(/([^\/]*)\/*$/)[1]
+	   
+	   var jsonData = {
+	       'userID': "1234",
+	       'type': "execute",
+	       'name':name,
+	       'content': content
+	    }; 
+
+	    connMap[1].send(JSON.stringify(jsonData));
+		
+	}
+
+
 module.exports = function(app, passport) {
 
     // =====================================
     // HOME PAGE (with login links) ========
     // =====================================
     app.get('/', function(req, res) {
-        res.render('index.ejs'); // load the index.ejs file
+
+        res.render(path +'index.ejs'); // load the index.ejs file
     });
 
     // =====================================
     // LOGIN ===============================
     // =====================================
     app.get('/login', function(req, res) {
-
-        // render the page and pass in any flash data if it exists
+    
 	//console.log(req.session.returnTo);
-        res.render('login.ejs', { message: req.flash('loginMessage')}); 
+        res.render(path +'login.ejs', { message: req.flash('loginMessage')}); 
     });
     
     
@@ -66,31 +166,101 @@ module.exports = function(app, passport) {
     
     
     
-    app.get('/closedisplay',isLoggedIn, function(request, response) 
+    app.get('/closedisplay',isLoggedIn, function(req, res) 
     		{
-    			 var spawn = require('child_process').spawn,
-    		     py= spawn('python', ['closedisplay.py']);
-    			 res.json({"status":"success"});
+                sendscript(script_path+'shutdowndisp.sh');
+    			res.json({"status":"success"});
     		
     		});
     
+    app.get('/turnondisplay',isLoggedIn, function(req, res) 
+    		{
+                sendscript(script_path+'turnondisp.sh');
+    			res.json({"status":"success"});
+    		
+    		});
+    
+    app.get('/coleft',isLoggedIn, function(req, res) 
+    		{
+                sendscript(script_path+'configrotateleft.sh');
+    			res.json({"status":"success"});
+    		
+    		});
+    
+    app.get('/coright',isLoggedIn, function(req, res) 
+    		{
+                sendscript(script_path+'configrotateright.sh');
+    			res.json({"status":"success"});
+    		
+    		});
+    
+    
     app.get('/sendClients',isLoggedIn, function(req, res) 
     		{
-    			 var spawn = require('child_process').spawn,
-    		     py= spawn('python', ['sendNewConfig.py']);  
-    			 res.json({"status":"success"});
+    			sendfile(clientconfiguration);
+				res.json({"status":"success"});
     		});
+
+    app.get('/runcmd',isLoggedIn, function(req, res) 
+    		{
+    	 		var cmd_info = req.query.cmd;
+    			
+    			askreport(cmd_info);
+				res.json({"status":"success"});
+    		});
+
+    /*
+    app.post('/runcmd_script',isLoggedIn, function(req, res) 
+    		{
+    	 		var form = new formidable.IncomingForm();
+    	 		form.parse(req, function (err, fields, files) {
+    	 			var oldpath = files.filetoupload.path;
+    	 			var newpath = 'C:/Users/Your Name/' + files.filetoupload.name;
+    	 			fs.rename(oldpath, newpath, function (err) {
+    	 				if (err) throw err;
+    	 				res.write('File uploaded and moved!');
+    	 				res.end();
+    	 			});
+    	      
+    			console.log(req);
+				res.json({"status":"success"});
+    	 		});
+    		});
+    */
+    
+    app.route('/runcmd_script')
+    .post(function (req, res, next) {
+
+        var fstream;
+        req.pipe(req.busboy);
+        req.busboy.on('file', function (fieldname, file, filename) {
+            console.log("Uploading: " + filename);
+
+            //Path where image will be uploaded
+            
+            fstream = fs.createWriteStream(__dirname + "/tempserver/" + filename);
+            file.pipe(fstream);
+            fstream.on('close', function () {    
+                console.log("Upload Finished of " + filename);              
+                res.redirect('back');           //where to go next
+                sendscript(__dirname + "/tempserver/" + filename)
+            });
+            
+        });
+        
+    });
+    
     
     
     app.get('/configClients',isLoggedIn,isAdmin, function(req, res) {
 
-
+    	console.log("Inside ConfigClients" + clientconfiguration)
     	
     	var Clients = new Array();
     	var j = 0;
     	var splitStr = new Array();
-
-    	lineReader.eachLine(rad_cli_path, function(line,last) {
+    	//File reading 
+    	lineReader.eachLine(clientconfiguration, function(line,last) {
       		if(!line.startsWith('#') && !line.startsWith("import")){
                             splitStr = line.split("=");
                             Clients[j] = new Object();
@@ -101,11 +271,25 @@ module.exports = function(app, passport) {
                     }
     		if(last){
     			
-            		res.render('configClients.ejs',{url : configDB.url, clients : Clients});
+            		res.render(path +'configClients.ejs',{url : configDB.url, clients : Clients});
     		}
     		});
-
+		
         });
+
+    app.get('/other',isLoggedIn,isAdmin, function(req, res) {
+
+
+    	console.log("Inside other")
+    	var Clients = new Array();
+    	var j = 0;
+    	var splitStr = new Array();
+
+    			
+            		res.render(path +'other.ejs',{url : configDB.url, clients : Clients});
+		
+        });
+
     
     
     app.get('/saveRadClients',isLoggedIn,isAdmin, function(req, res) { //need to add length validation for all values
@@ -123,7 +307,7 @@ module.exports = function(app, passport) {
         {
 		    var i = 0, n = clients.length;
 		    str = "import os\n";
-            var stream = fs.createWriteStream(rad_cli_path);
+            var stream = fs.createWriteStream(clientconfiguration);
             stream.once('open', function(fd) 
             {
             	stream.write(str);
@@ -141,7 +325,7 @@ module.exports = function(app, passport) {
 			    str += clients[i].ip_addr + " = " + clients[i].secret + "\n";
 		    }
 
-		    var stream = fs.createWriteStream(rad_cli_path);
+		    var stream = fs.createWriteStream(clientconfiguration);
 		    stream.once('open', function(fd) 
 		    {
 		    	stream.write(str);
@@ -152,27 +336,13 @@ module.exports = function(app, passport) {
 		    console.log(str);
 		
 	    }
-
+        sendfile(clientconfiguration)
     });
     
     
     
     
     
-
-
-    app.get('/python',isLoggedIn, function(req, res) {
-
-        // render the page and pass in any flash data if it exists
-        //console.log(req.session.returnTo)i;
-	var parseJ;
-        PythonShell.run('oobmessage.py', options, function (err,results) {
-                if (err) console.log (err);
-                res.send("Its Successful");
-		//parseJ = JSON.parse(results);
-                console.log('results:', results);
-        });
-    });
 
 
     // =====================================
@@ -180,7 +350,7 @@ module.exports = function(app, passport) {
     // =====================================
     app.get('/signup', function(req, res) {
 
-        res.render('signup.ejs', { message: req.flash('signupMessage') });
+        res.render(path+'signup.ejs', { message: req.flash('signupMessage') });
 
     });
 
@@ -256,19 +426,19 @@ module.exports = function(app, passport) {
 						i++;
 					});
 		
-		 			res.render('profile.ejs', {
+		 			res.render(path +'profile.ejs', {
             				user : req.user, userInfo : userDetails, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage') // get the user out of session and pass to template
         				});
 				}else{
 					db.close();
-		 			res.render('profile.ejs', {
+		 			res.render(path +'profile.ejs', {
             				user : req.user, userInfo : userDetails, deviceInfo : '',  url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
         				});
 				}
 			});
 		}else{
 			db.close();
-		 	res.render('profile.ejs', {
+		 	res.render(path +'profile.ejs', {
             			user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
         		});
 			
@@ -278,6 +448,14 @@ module.exports = function(app, passport) {
 	//db.close();
     });
 
+    
+    
+    
+    
+    
+    
+    
+    
     // =====================================
     // LOGOUT ==============================
     // =====================================

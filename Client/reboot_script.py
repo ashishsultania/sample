@@ -45,19 +45,6 @@ def main():
     read_in(CConfig)
     
     
-    
-    #a=lines
-    #counter = 0
-    #for line in reversed(open("date.txt","r").readlines()):
-    #    print( line.rstrip())
-    #    b = datetime.strptime(a,timformat) - datetime.strptime(line.rstrip(),timformat)
-    #    a = line.rstrip()
-    #    if b.days == 0:
-    #        if b.seconds > 10 and b.seconds < 23:
-    #            print(b.seconds)
-    #            counter=counter+1
-
-    #print("counter = ",counter)
     with open("date.txt","a") as f:
         f.write(lines)
         f.write("\n")

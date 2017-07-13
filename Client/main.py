@@ -5,16 +5,7 @@ import memuse
 import json
 import reboot_script
 import logging
-
-
-def invokepostclient (filename,CConfig):
-    files = {'logFile': open(filename, 'rb')}
-    try:
-        r = requests.post(CConfig.serverurl, files=files,verify=False)
-        logging.debug("Response from post is: " + str(r))
-    except:
-        logging.error("Connection refused to send log: " + filename)
-        pass
+import wsclient
 
 def runcommad(cmd):
     p = Popen([cmd], stdin=PIPE, shell=True)
@@ -24,24 +15,7 @@ def runcommad(cmd):
     logging.debug("Command is: " + str(cmd))
     logging.debug("Output is: " + str(output))
     logging.error("Error is: " + str(err)) 
-    logging.debug("Status is: " + str(p_status))   
     
-def startserver(CConfig):
-    serverfname = CConfig.dirnm + '/server_clientside.js'
-    if not os.path.isfile(serverfname):
-        logging.debug("File no Exist: Exiting Server Thread......")
-        sys.exit()
-    logging.debug(serverfname)   
-
-    os.chdir(CConfig.dirnm)
-    cmd = "node server_clientside.js"
-    p = Popen([cmd], stdin=PIPE, shell=True)
-    #cmd = "sudo node server_clientside.js"
-    #os.system(cmd)
-    time.sleep(2)
-
-    logging.debug("Server stared done")
-
 
 def checknetwork(CConfig):
     while 1:
@@ -59,10 +33,11 @@ def checknetwork(CConfig):
             reboot_script.main()
             time.sleep(30)
 
+
 def getcurrent_url(CConfig):
     logging.debug("Checking URL")
     mozdir = CConfig.basedir + '/.mozilla/firefox/'
-    target = open("otherlogs/currenturl.log", 'w')
+    target = open(CConfig.dirnm+"/otherlogs/currenturl.log", 'w')
 
     tabs = []
     active_urlindex = 0
@@ -100,20 +75,20 @@ def main(CConfig):
     #TODO: Remove sleep 5
     time.sleep(5)
     
-    if not os.path.isdir(CConfig.dirnm):
-        os.mkdir(CConfig.dirnm)
-    os.chdir(CConfig.dirnm)
-    logging.debug ("Working Directory:" + os.getcwd())
     
-    t           = threading.Thread(target=startserver,args=(CConfig,))
-    t.daemon    = True
-
     t1          = threading.Thread(target=checknetwork,args=(CConfig,))
     t1.daemon   = True
     logging.debug ("Check internal Network in a thread:" + t1.name)
     t1.start()
-    logging.debug ("Start Server in a thread:" + t.name)
+    
+    t          = threading.Thread(target=wsclient.web_socket, args=())
+    t.daemon   = True
+    logging.debug ("Start WebSocket")
     t.start()
+    
+
+    os.chdir(CConfig.dirnm)
+    logging.debug ("Working Directory:" + os.getcwd())
 
     #Create all the logs from the commands
     otherlogdir =  CConfig.dirnm + '/otherlogs/'
@@ -150,19 +125,22 @@ def main(CConfig):
         
         for i in range(len(cmd)-1):
             runcommad(cmd[i])
-            
+        
+        #Obtain memory as per the /proc files    
         memuse.getmemuse(CConfig.dirnm + '/otherlogs/memuse')
         
         #Create periodic logs
-        timformat='%Y-%m-%d-%H-%M-%S-%f'
-        tim=datetime.now().strftime(timformat)
-        foldername = "regular_log_" + tim
-        filename = foldername +".tar"
-        time.sleep(5)
+        timformat   = '%Y-%m-%d-%H-%M-%S-%f'
+        tim         = datetime.now().strftime(timformat)
+        foldername  = "regular_log_" + tim
+        filename    = foldername +".tar"
+        
+        
         plogdir =  CConfig.dirnm + '/periodic_log'
         if not os.path.isdir(plogdir):
             os.mkdir(plogdir)
         os.chdir(plogdir)
+        
         fname = ['/var/log/kern.log',
                  '/var/log/syslog',
                  '/var/log/Xorg.0.log',
@@ -189,7 +167,7 @@ def main(CConfig):
         runcommad(cmd)   
         
         
-        invokepostclient(filename+".gz",CConfig)
+        wsclient.ws.sendplog(filename+".gz")
         time.sleep(10)
         
         os.remove(filename+".gz")

@@ -218,6 +218,7 @@ def main():
     #files = sorted(os.listdir(os.getcwd()), key=os.path.getmtime)
 
     if len(dated_files) == 1:
+        return
         exit(0)
 
     oldest = dated_files[0][1]
@@ -248,7 +249,7 @@ def main():
             #print os.path.join(path, name)
             filesindir2.append(os.path.join(path, name))
     #print filesindir2
-    print "....................................."
+    #print "....................................."
 
 
 
@@ -275,6 +276,9 @@ def main():
         list2.append(l2)
 
     namematchindex = [(i, j) for i in range(len(list1)) for j in range(len(list2)) if list1[i] == list2[j]]
+
+    os.chdir(ServerConfig.basedir)
+
 
 if(__name__ == "__main__"):
     main()
