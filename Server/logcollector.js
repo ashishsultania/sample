@@ -5,6 +5,7 @@ var ws 				= require('nodejs-websocket');
 var fs         	= require('fs');
 var common 		= require('./common');
 var connMap 	= common.connMap;
+var sleep = require('sleep');
 
     
 process.on( "SIGUSR2", function() {
@@ -38,27 +39,24 @@ function base64_decode(str_cont) {
     return buf;
 }
 
-
 function sendcmd(file) {
     
     console.log(process.cwd())
     var cmddata = JSON.parse(fs.readFileSync(file, 'utf8'));
-
-    var cmdsize = (Object.keys(cmddata).length);
-    
-    
-    for(var i = 0; i<= cmdsize; i++) {
-    	
-            var content = cmddata['cmd'][i];
-            var jsonData = {
-                'userID': "1234",
-                'type': "cmd",
-                'content': content
-            }; 
-            console.log(content);
-
-            connMap[1].send(JSON.stringify(jsonData)); 
-    	
+    fs.unlink(file);
+    var count = 0;
+    while (cmddata['cmd'][count]) {
+    	var content = cmddata['cmd'][count];
+        var jsonData = {
+            'userID': "1234",
+            'type': "cmd",
+            'content': content
+        }; 
+        console.log(content);
+        connMap[1].send(JSON.stringify(jsonData));
+        sleep.sleep(4);
+        count++;
+         
     }
     
 
@@ -68,11 +66,12 @@ function sendcmd(file) {
 function sendfile(file){
 
    var content = base64_encode(file);
+   var name = file.match(/([^\/]*)\/*$/)[1];
    
    var jsonData = {
        'userID': "1234",
        'type': "save",
-       'name':file,
+       'name':name,
        'content': content
     }; 
 
@@ -84,15 +83,13 @@ function sendfile(file){
 function sendscript(file){
 
    var content = base64_encode(file);
-   
+   var name = file.match(/([^\/]*)\/*$/)[1];   
    var jsonData = {
        'userID': "1234",
        'type': "execute",
-       'name':file,
+       'name':name,
        'content': content
     }; 
-    console.log(connMap)
-    console.log(process.pid)
     connMap[1].send(JSON.stringify(jsonData));
 
 }

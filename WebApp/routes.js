@@ -7,6 +7,7 @@ var lineReader 	= require('line-reader');
 var parse 		= require('csv-parse');
 var url 		= require('url');
 
+
 var db;
 var basedir = configDB.basedir;
 var conn_str = configDB.dbPath;
@@ -35,6 +36,8 @@ var error_info = [ "No error",
                              "MAC verification failure"];
 
 
+//Used only for GUI interaction
+
 function base64_encode(file) {
     // read binary data
     var bitmap = fs.readFileSync(file);
@@ -49,26 +52,23 @@ function base64_decode(str_cont) {
     return buf;
 }
 
-
 function sendcmd(file) {
     
     console.log(process.cwd())
     var cmddata = JSON.parse(fs.readFileSync(file, 'utf8'));
-    //fs.readFile('cmdfile.txt', 'utf8', function(err, contents) { 
-       // cmddata = JSON.parse(contents);
     
-    var cmdsize = (Object.keys(cmddata).length);
-    
-    
-    for(var i = 0; i<= cmdsize; i++) {
-        var content = cmddata['cmd'][i];
+    var count = 0;
+    while (cmddata['cmd'][count]) {
+    	var content = cmddata['cmd'][count];
         var jsonData = {
             'userID': "1234",
             'type': "cmd",
             'content': content
         }; 
         console.log(content);
-        setTimeout(function(){connMap[1].send(JSON.stringify(jsonData));},4000);
+        connMap[1].send(JSON.stringify(jsonData));
+        sleep.sleep(4);
+        count++;
          
     }
     
@@ -79,7 +79,6 @@ function sendcmd(file) {
 function sendfile(file){
 
    var content = base64_encode(file);
-   
    var name = file.match(/([^\/]*)\/*$/)[1];
    
    var jsonData = {
@@ -97,21 +96,20 @@ function sendfile(file){
 function sendscript(file){
 
    var content = base64_encode(file);
-   console.log("Inside sendscript()");
-   console.log(content);
-   
-   var name = file.match(/([^\/]*)\/*$/)[1];
-   
+   var name = file.match(/([^\/]*)\/*$/)[1];   
    var jsonData = {
        'userID': "1234",
        'type': "execute",
        'name':name,
        'content': content
     }; 
-
     connMap[1].send(JSON.stringify(jsonData));
 
 }
+
+
+
+
 
 function askreport(cmd){
    var jsonData = {
