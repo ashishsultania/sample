@@ -104,14 +104,12 @@
    			<a onClick="sendscripthtml('/runcmd/')" class="btn btn-default btn-sm">Run Command on Display</a>
    			
    			<br><br><br>
-   			    <form method='post' action='runcmd_script' enctype="multipart/form-data">
-                <input type='file' name='fileUploaded'>
-                <input type='submit'>
-        
-
-   			<a onClick="sendscripthtml('/runcmd_script/')" class="btn btn-default btn-sm" >Send Script to Display</a>
-            <input id = "myFile" type="file" style="display: inline;">
             
+            
+   			    <form method='post' action='runcmd_script' enctype="multipart/form-data">
+                <input type='file' name='fileUploaded' style="display: inline;">
+                <input type='submit' value = 'Send Script to Display' class="btn btn-default btn-sm" >
+                    
             
    			</div>
    			
@@ -136,11 +134,6 @@ function sendscripthtml(value){
 	if(value == '/runcmd/'){
 	   var cmd_info = document.getElementById("textbox").value;
 	}
-	if(value == '/runcmd_script/'){
-	   var cmd_info = document.getElementById("myFile");
-	   alert(cmd_info.value);
-	}
-	
 	
     url_str = url_str + value + "?cmd=" + cmd_info; 
     var xhttp = new XMLHttpRequest();
@@ -155,12 +148,6 @@ function sendscripthtml(value){
 					setTimeout(stopLoading, 1000);
 				}
 				
-				if(value == '/runcmd_script/'){
-                    div_alert.innerHTML = "Script File Sent Successfully";
-                    div_alert.style.display='block';
-                    setTimeout(stopLoading, 1000);
-                }
-
 		
 			}
 			else if(obj.status == "refresh"){
