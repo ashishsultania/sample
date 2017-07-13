@@ -1,0 +1,1 @@
+xrandr -o normal
