@@ -6,8 +6,9 @@ var fs         	= require('fs');
 var common 		= require('./common');
 var connMap 	= common.connMap;
 var sleep = require('sleep');
+var configDB = require('../WebApp/config/database.js'); 
+var basedir = configDB.basedir;    
 
-    
 process.on( "SIGUSR2", function() {
     //sendscript('tryscript.sh')
 	process.chdir('../');
@@ -219,7 +220,7 @@ var storage =   multer.diskStorage(
 {
     destination: function (req, file, callback) 
     {
-        callback(null, '/home/ashish/sample/uploadserver');
+        callback(null, basedir + '/uploadserver');
     },
     filename: function (req, file, callback) 
     {
@@ -250,7 +251,6 @@ var session      	= require('express-session');
 var sqlite3 		= require('sqlite3').verbose();
 var db;
 
-var configDB 		= require('../WebApp/config/database.js');
 var conn_str 		= configDB.dbPath;
 
 var busboy = require('connect-busboy'); //middleware for form/file upload

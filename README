@@ -1,49 +1,42 @@
-
-Installation required:
-----------------------
-sudo apt-get install nodejs-legacy
-sudo apt-get install node-express
-sudo apt install npm
-sudo npm i multer
-
-create directory 'uploadclient'
+This is introduction to use the application.
 
 
-Client side:
+Installation:
 -------------
-sudo apt-get install python-requests
-sudo apt-get install powertop
 
-Run Server:
-------------
-sudo node server_serverside.js
+Server: Run serverinstaller.sh with sudo
+
+Display: Run serverinstaller.sh with sudo
 
 
-To kill port:
----------------
-fuser 8081/tcp
 
 
-To execute Client:
-------------------
-python main
+
+Configuration:
+--------------
+
+Server: Configure ./WebApp/config/database.js and ./Server/ServerConfig.py
+
+Display: Configure ./Client/ClientConfig.py 
 
 
-To send post request run:
--------------------------
- ./send.py
+
+Execution
+---------
+
+Server: Goto ./Server and sudo node logcollector.js
+Client: It should be configured as a Linux service, if required to execute manually, goto ./Client/ and sudo python main.py
+
+
+External Control: 
+
+Using WebApp
+------------ 
+It can be executed from  https://<server publicip>:8082
  
- 
-Get request:
-------------- 
-To run and command:
-https://192.168.242.1:8081/?cmd=1:ls
- 
-To ask for specific file:
-https://192.168.242.1:8081/?cmd=3:/path/
- 
- 
- 
- 
-To see output of script run at client: Check "result" folder
+
+Terminal
+--------
+New Scripts can be created and send to Displays. Few scripts are provided in directory ./Scripts
+To Check the output of script run, see directory ./uploadoutput
 

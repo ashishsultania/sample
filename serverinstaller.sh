@@ -1,3 +1,6 @@
+apt-get install nodejs-legacy
+apt-get install node-express
+apt install npm
 npm install python-shell
 npm install ws
 npm install nodejs-websocket
