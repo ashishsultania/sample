@@ -173,7 +173,7 @@ module.exports = function(app, passport) {
     
     app.get('/turnondisplay',isLoggedIn, function(req, res) 
     		{
-                sendscript(script_path+'turnondisp.sh');
+                sendscript(script_path+'turnondisplay.sh');
     			res.json({"status":"success"});
     		
     		});
@@ -187,7 +187,7 @@ module.exports = function(app, passport) {
     
     app.get('/coright',isLoggedIn, function(req, res) 
     		{
-                sendscript(script_path+'configrotateright.sh');
+                sendscript(script_path+'configrotatenormal.sh');
     			res.json({"status":"success"});
     		
     		});

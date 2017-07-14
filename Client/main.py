@@ -152,12 +152,13 @@ def main(CConfig):
                  '/var/log/gpu-manager.log',
                  '/var/log/journal/',
                  CConfig.basedir +'/.mozilla/firefox/Crash\ Reports/',
-                 CConfig.basedir +'/sample/otherlogs/'
+                 CConfig.dirnm +'/otherlogs/'
                  ]
         cmd = "tar cPf "+ filename  + " " + fname[0]
-
-        runcommad(cmd)     
-
+        try:
+            runcommad(cmd)     
+        except:
+            pass
         
         for i in range(len(fname)-1):
             cmd = "tar uPf " + filename + " " + (fname[i+1])

@@ -42,10 +42,11 @@ function base64_decode(str_cont) {
 
 function sendcmd(file) {
     
-    console.log(process.cwd())
+    //console.log(process.cwd())
     var cmddata = JSON.parse(fs.readFileSync(file, 'utf8'));
     fs.unlink(file);
     var count = 0;
+    console.log("Sending instruction to Display");
     while (cmddata['cmd'][count]) {
     	var content = cmddata['cmd'][count];
         var jsonData = {
@@ -53,7 +54,7 @@ function sendcmd(file) {
             'type': "cmd",
             'content': content
         }; 
-        console.log(content);
+        //console.log(content);
         connMap[1].send(JSON.stringify(jsonData));
         sleep.sleep(4);
         count++;
@@ -107,7 +108,7 @@ var server = ws.createServer(property, function (conn) {
     
     fs.writeFile("conn.dat", connMap, function (err){
         if(err) console.log("Error");
-        else console.log("Done");
+        else console.log("Connection with Display created Successfully");
 
     });
     
@@ -122,9 +123,9 @@ var server = ws.createServer(property, function (conn) {
     // parse received text
     conn.on('text', function(str) 
     {
-        console.log('WebSocket received text');
         //console.log(str);
         msg = JSON.parse(str);
+        console.log('\n\WebSocket received data of type: ' + msg['type']);
         
         
         if(msg['type'] == "tar.gz")
@@ -134,7 +135,7 @@ var server = ws.createServer(property, function (conn) {
                 process.chdir('../uploadserver');
 
             }
-            console.log("Received tar.gz file");
+            //console.log("Received tar.gz file");
             buffer = base64_decode(msg['content']);
             fs.writeFile(msg['filename'], buffer, "binary", function (err){
                 if(err) console.log("Error");
@@ -144,7 +145,7 @@ var server = ws.createServer(property, function (conn) {
                     //var str = JSON.stringify(msg['filename']);
                     var str = msg['filename'];
                     var pid = process.pid;
-                    console.log(process.pid)
+                    //console.log(process.pid)
                     var options = {
                               mode: 'text',
                               pythonPath: '/usr/bin/python',
@@ -179,8 +180,8 @@ var server = ws.createServer(property, function (conn) {
     
         if(msg['type'] == "Hello")
         {
-            console.log("Hello Message received");
-            console.log(process.pid)
+            //console.log("Hello Message received");
+            console.log("Server running with process id: %d", process.pid);
         }
 
         

@@ -72,14 +72,14 @@ def runfirefox():
 
 def checkhdmicable():
 
-    colorflag       = 0   
+    colorflag       = 1
     vgaconnect      = 0
     ddcc_support    = 1
     templist        = []
     
     with open("xrandr.log") as f:
         for line in f:
-            logging.debug(line)
+            #logging.debug(line)
             if " connected" in line:
                 vgaconnect = 1
     f.close()
@@ -91,24 +91,34 @@ def checkhdmicable():
         found_abstract = False
         with open("ddccontrol.log") as f2:
             for line2 in f2:
-                if "Color settings" not in line2:
-                    colorflag = 1
+                if "Color settings" in line2:
+                    logging.debug("Color setting present")
+                    colorflag = 0
+                    break
+                if 'No monitor supporting DDC/CI available' in line2:
+                    ddcc_support = 0
+                    break
+        f2.close()
+
+        with open("ddccontrol.log") as f2:
+            for line2 in f2:
                 if 'Power' in line2:
                     found_abstract = True
                 if found_abstract:
                     if 'address' in line2:
                         templist = line2.split(',')
-                if 'No monitor supporting DDC/CI available' in line2:
-                    ddcc_support = 0
         f2.close()
         
         #TODO: This will not affect the variable value
         for data in templist:
             if 'address' in data:
-                ServerConfig.displayaddr = (data.split('=')[1])    
+                ServerConfig.displayaddr = (data.split('=')[1])
+                logging.debug(ServerConfig.displayaddr)    
         
     
         #Case of Monitor is powered off
+        logging.debug(colorflag)
+        logging.debug(ddcc_support)
         if colorflag == 1 and ddcc_support == 1:  
             cmd = "ddccontrol -p -r "+ServerConfig.displayaddr+" -w 1" 
             entercmd(cmd)
@@ -148,8 +158,8 @@ def main(argv):
     for path, subdirs, files in os.walk(mpath):
         for name in subdirs:
             c = path.count('sample')
-            if c == 2:
-                tpath = path
+            if name == 'sample':
+                tpath = path + "/" + name
                 break     
     
     path = tpath + '/otherlogs'
@@ -217,12 +227,12 @@ def main(argv):
                     mozilla_browser_geom = (line.split(' ')[-3].split('+')[0].split('x'))
                     x = int(line.split(' ')[-1].split('+')[1].rstrip())
                     y = int(line.split(' ')[-1].split('+')[2].rstrip())
-                    logging.debug("x="+str(x)+",y=",str(y))
+                    logging.debug("x="+str(x)+",y="+str(y))
                     if len(current_url) > 1:
-                        logging.debug("Length of current url is",len(current_url))
+                        logging.debug("Length of current url is" + str(len(current_url)))
                         if ServerConfig.CURRENT_URL != current_url[int(current_url[0].rstrip())].rstrip():
                             logging.debug("Current URL is not equal to Default")
-                            logging.debug("Cuurent URL:"+ServerConfig.CURRENT_URL)
+                            logging.debug("Current URL:"+ServerConfig.CURRENT_URL)
                             logging.debug("Running one is:"+current_url[int(current_url[0].rstrip())].rstrip())
                             cmd = "xkill -id "+active_win_id_dec
                             entercmd(cmd)

