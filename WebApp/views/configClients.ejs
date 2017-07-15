@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Configure Clients</title>
+    <title>Configure Displays</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
@@ -156,8 +156,8 @@
 <div class="container" id = "container">
 
     <div class="page-header text-center">
-        <h1 style="color:#0099ff"> Client Configuration </h1>
-        <br> <br> <br>    
+        <h1 style="color:#0099ff"> Display Configuration </h1>
+        <br> <br> <br>
 	    <a href="/profile" class="btn btn-default btn-sm">Home</a>
         <a href="/logout" class="btn btn-default btn-sm">Logout</a>
         <br> <br>
@@ -168,10 +168,11 @@
 	<div id="collapseOne" class="panel-collapse collapse in">
 		<div class="panel-body">
    			<div align="center"> 
-   			    <button class="add_field_button" onClick="addInputField()">Add New Entry</button> 
-   			    <button class="btn" onClick="cancelSave()">Cancel</button> 
-   			    <button class="btn" onClick="saveClients()">Save</button>
-   			    <button class="btn" onClick="postsendClients()">Send to Client</button>
+   			    <button class="btn btn-sm" onClick="addInputField()">Add New Entry</button>   			    
+   			    <button class="btn btn-sm" onClick="saveClients()">Save</button>
+   			    <button class="btn btn-sm" onClick="cancelSave()">Cancel</button> 
+   			    <br> <br>
+   			    <button class="btn btn-sm" onClick="postsendClients()">Send to Display</button>
    			</div>
    			
 		    <form align="center">

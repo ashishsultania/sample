@@ -100,15 +100,16 @@
 	<div id="collapseOne" class="panel-collapse collapse in">
 		<div class="panel-body">
    			<div align="center"> 
-   			Type Command: <input id = "textbox" type="text" name="command" value="ls"><tab>
-   			<a onClick="sendscripthtml('/runcmd/')" class="btn btn-default btn-sm">Run Command on Display</a>
+   			Type Command here: <input id = "textbox" type="text" name="command" value="ls"><tab>
+   			<button class="btn btn-sm" onClick="sendscripthtml('/runcmd/')">Run Command on Display</button> 
+   			
    			
    			<br><br><br>
-            
+            OR Upload Script: <br> <br>
             
    			    <form method='post' action='runcmd_script' enctype="multipart/form-data">
                 <input type='file' name='fileUploaded' style="display: inline;">
-                <input type='submit' value = 'Send Script to Display' class="btn btn-default btn-sm" >
+                <input type='submit' value = 'Send Script to Display' class="btn btn-sm" >
                     
             
    			</div>

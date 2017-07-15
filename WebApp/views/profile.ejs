@@ -90,14 +90,14 @@
 
     <div class="page-header text-center">
         <h1 style="color:#0099ff"> Display Manager <br> <br> <br> <br> </h1>
-        <h3 align="justify" style="color:#003300"><tab2>   Choose your action: </tab2> <br> <br> </h3>
-        <a onClick="sendscripthtml('/closedisplay/')" class="btn btn-default btn-sm">Turn Off Display</a>
-        <a onClick="sendscripthtml('/turnondisplay/')" class="btn btn-default btn-sm">Turn On Display</a>
-        <a onClick="sendscripthtml('/coleft/')" class="btn btn-default btn-sm">Change Orientation Vertical</a>
-        <a onClick="sendscripthtml('/coright/')" class="btn btn-default btn-sm">Change Orientation Horizontal</a>
+        <h3 align="justify" style="color:#003300"><tab1> Choose your action: </tab1> <br> <br> </h3>
+        <button class="btn btn-sm" onClick="sendscripthtml('/closedisplay/')">Turn Off Display</button>
+        <button class="btn btn-sm" onClick="sendscripthtml('/turnondisplay/')">Turn On Display</button>
+        <button class="btn btn-sm" onClick="sendscripthtml('/coleft/')">Change Orientation Vertical</button>
+        <button class="btn btn-sm" onClick="sendscripthtml('/coright/')">Change Orientation Horizontal</button>
         <br> <br>
-		<a href="/configClients" class="btn btn-default btn-sm">Client Configuration</a>
-		<a href="/other" class="btn btn-default btn-sm">Debug Display</a>
+		<a href="/configClients" class="btn btn-primary btn-sm">Client Configuration</a>
+		<a href="/other" class="btn btn-primary btn-sm">Debug Display</a>
 	    <br> <br> <br> <br> <br>
 		
     </div>
@@ -112,14 +112,12 @@
 
         <!-- LOCAL INFORMATION -->
         <div class="col-sm-3">
-            <div class="well">
-                <h3> User Detail</h3>
-                    <p>
-                        <strong>UserId</strong>: <%= user.id %><br>
-                        <strong>UserName</strong>: <%= user.username %><br>
+                <h4> Admin Login Detail</h4>
+                    <p>                        
+                        <strong>User Name</strong>: <%= user.username %><br>
+                        <strong>Id</strong>: <%= user.id %><br>
                     </p>
                     <a href="/logout" class="btn btn-default btn-sm">Logout</a>                    
-            </div>
         </div>
     </div>
 </div>
