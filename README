@@ -1,4 +1,9 @@
-This is introduction to use the application.
+This the the implementation of a management and monitoring system for Digital Signage system.
+This is the thesis code implemented at Aalto University.
+
+
+
+Introduction to use the application.
 
 
 Installation:
@@ -6,7 +11,7 @@ Installation:
 
 Server: Run serverinstaller.sh with sudo
 
-Display: Run serverinstaller.sh with sudo
+Display: Run displayinstaller.sh with sudo
 
 
 
