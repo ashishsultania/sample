@@ -17,7 +17,7 @@ npm install connect-busboy
 npm install passport-local
 npm install bcrypt-nodejs
 npm install line-reader
-npm install csv-parser
+npm install csv-parse
 npm install ejs
 npm install express
 npm install append-field

